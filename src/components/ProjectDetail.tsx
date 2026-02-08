@@ -1,0 +1,141 @@
+
+import { useEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+
+type Project = {
+    id: number;
+    title: string;
+    category: string;
+    location: string;
+    year: string;
+    images: string[];
+    description: string;
+    area: string;
+};
+
+interface ProjectDetailProps {
+    project: Project;
+    onClose: () => void;
+}
+
+export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [expandedImage, setExpandedImage] = useState<string | null>(null);
+
+    // Close on ESC
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (expandedImage) setExpandedImage(null);
+                else onClose();
+            }
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [onClose, expandedImage]);
+
+    // Lock body scroll
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
+    // Animation in
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            gsap.fromTo(containerRef.current,
+                { opacity: 0 },
+                { opacity: 1, duration: 0.6, ease: "power2.out" }
+            );
+        }, containerRef);
+        return () => ctx.revert();
+    }, []);
+
+    return (
+        <div
+            ref={containerRef}
+            className="fixed inset-0 z-[200] bg-white overflow-y-auto scrollbar-hide text-arhos-black w-full"
+        >
+            {/* Close Button - Fixed Top Right */}
+            <button
+                onClick={onClose}
+                className="fixed top-6 right-6 z-[220] px-4 py-2 bg-white/90 backdrop-blur-md text-xs font-display uppercase tracking-widest text-arhos-black hover:text-arhos-terracotta border border-arhos-black/10 hover:border-arhos-terracotta transition-all rounded-full"
+            >
+                Close
+            </button>
+
+
+            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 py-12 lg:py-20">
+
+                {/* --- Header (Meta Data) - Centered --- */}
+                <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-20 md:mb-32">
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <p className="font-display text-xs text-arhos-terracotta uppercase tracking-[0.2em]">
+                            {project.category}
+                        </p>
+                        <h1 className="font-display font-bold text-4xl md:text-6xl lg:text-7xl leading-[0.95] text-arhos-black">
+                            {project.title}
+                        </h1>
+                    </div>
+
+                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-sans text-arhos-black mt-10 pt-10 border-t border-arhos-black/10 w-full animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
+                        <div>
+                            <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Lokácia</span>
+                            {project.location}
+                        </div>
+                        <div>
+                            <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Rok</span>
+                            {project.year}
+                        </div>
+                        <div>
+                            <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Rozloha</span>
+                            {project.area}
+                        </div>
+                        <div>
+                            <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Status</span>
+                            Dokončené
+                        </div>
+                    </div>
+
+                    <div className="prose prose-arhos text-arhos-gray font-sans text-lg leading-relaxed max-w-[65ch] mt-10 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                        <p>
+                            {project.description}
+                        </p>
+                    </div>
+                </div>
+
+                {/* --- Main Content (Visuals) - Uniform Stack --- */}
+                <div className="flex flex-col gap-16 md:gap-32 w-full max-w-[1600px] mx-auto">
+                    {project.images.map((img, index) => (
+                        <div key={index} className="w-full">
+                            <img
+                                src={img}
+                                alt={`${project.title} - view ${index + 1}`}
+                                className="w-full h-auto object-cover hover:opacity-95 transition-opacity duration-300 cursor-zoom-in shadow-sm"
+                                loading={index === 0 ? "eager" : "lazy"}
+                                onClick={() => setExpandedImage(img)}
+                            />
+                        </div>
+                    ))}
+                </div>
+
+            </div>
+
+            {/* --- Expanded Image Overlay --- */}
+            {expandedImage && (
+                <div
+                    className="fixed inset-0 z-[250] bg-white flex items-center justify-center cursor-zoom-out"
+                    onClick={() => setExpandedImage(null)}
+                >
+                    <img
+                        src={expandedImage}
+                        alt="Zoomed view"
+                        className="w-full h-full object-contain p-4 md:p-12 animate-in fade-in zoom-in-95 duration-300"
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
