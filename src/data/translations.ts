@@ -88,7 +88,7 @@ export const translations = {
         },
         approach: {
             title: 'Náš prístup',
-            description: 'Uprednostňujeme overené princípy pred krátkodobým efektom. Tvoríme architektúru postavenú na logike, trvácnych materiáloch a svetle. Veríme, že kvalitný priestor nepotrebuje vysvetľovanie – stačí v ňom byť. Každý náš návrh je preto hľadaním jedinečnej odpovede na vaše potreby – kde každý detail má svoje miesto a každé rozhodnutie svoj dôvod.',
+            description: 'Sme architektonický ateliér pôsobiaci v mestách Michalovce, Košice a Bratislava. Uprednostňujeme overené princípy pred krátkodobým efektom. Tvoríme modernú architektúru a interiérový dizajn postavený na logike, trvácnych materiáloch a svetle. Veríme, že kvalitný priestor nepotrebuje vysvetľovanie – stačí v ňom byť.',
             services: [
                 'Architektonické štúdie',
                 'Realizačné projekty',
@@ -199,7 +199,7 @@ export const translations = {
         },
         approach: {
             title: 'Our Approach',
-            description: 'We prioritize proven principles over short-term effects. We create architecture built on logic, durable materials, and light. We believe that quality space needs no explanation – it is enough to be in it. Therefore, every design is a search for a unique answer to your needs – where every detail has its place and every decision its reason.',
+            description: 'We are an architecture studio based in Slovakia (Michalovce, Košice, Bratislava). We prioritize proven principles over short-term effects. We create modern architecture and interior design built on logic, durable materials, and light. We believe that quality space needs no explanation – it is enough to be in it.',
             services: [
                 'Architectural Studies',
                 'Implementation Projects',
