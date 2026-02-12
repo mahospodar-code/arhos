@@ -58,29 +58,43 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             ref={containerRef}
             className="fixed inset-0 z-[200] bg-white overflow-y-auto scrollbar-hide text-arhos-black w-full"
         >
-            {/* Close Button - Fixed Top Right */}
-            <button
-                onClick={onClose}
-                className="fixed top-6 right-6 z-[220] px-4 py-2 bg-white/90 backdrop-blur-md text-xs font-display uppercase tracking-widest text-arhos-black hover:text-arhos-terracotta border border-arhos-black/10 hover:border-arhos-terracotta transition-all rounded-full"
-            >
-                Close
-            </button>
+            <div className="min-h-full w-full grid grid-cols-1 lg:grid-cols-12">
 
+                {/* --- Left Column: Sticky Info (40%) --- */}
+                <div className="lg:col-span-5 px-6 py-12 lg:p-16 lg:h-screen lg:sticky lg:top-0 flex flex-col z-10 bg-white/90 backdrop-blur-sm lg:bg-transparent">
 
-            <div className="max-w-[1920px] mx-auto px-4 md:px-8 lg:px-12 py-12 lg:py-20">
+                    {/* Top: Close Button & Category */}
+                    <div className="flex justify-between items-start mb-12 lg:mb-auto">
+                        <button
+                            onClick={onClose}
+                            className="group flex items-center gap-3 text-xs font-display uppercase tracking-widest text-arhos-black/60 hover:text-arhos-terracotta transition-colors"
+                        >
+                            <span className="w-8 h-[1px] bg-current transition-all group-hover:w-12" />
+                            Zavrieť
+                        </button>
 
-                {/* --- Header (Meta Data) - Centered --- */}
-                <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-20 md:mb-32">
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        <p className="font-display text-xs text-arhos-terracotta uppercase tracking-[0.2em]">
+                        <span className="font-display text-xs text-arhos-terracotta uppercase tracking-[0.2em] hidden lg:block">
                             {project.category}
-                        </p>
-                        <h1 className="font-display font-bold text-4xl md:text-6xl lg:text-7xl leading-[0.95] text-arhos-black">
-                            {project.title}
-                        </h1>
+                        </span>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-sans text-arhos-black mt-10 pt-10 border-t border-arhos-black/10 w-full animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
+                    {/* Middle: Title & Description */}
+                    <div className="flex flex-col justify-center space-y-8 lg:space-y-12 max-w-xl">
+                        <span className="font-display text-xs text-arhos-terracotta uppercase tracking-[0.2em] lg:hidden mb-2">
+                            {project.category}
+                        </span>
+
+                        <h1 className="font-display font-bold text-4xl md:text-5xl lg:text-6xl leading-[0.95] text-arhos-black animate-in fade-in slide-in-from-left-4 duration-700">
+                            {project.title}
+                        </h1>
+
+                        <div className="prose prose-arhos text-arhos-gray font-sans text-base lg:text-lg leading-relaxed animate-in fade-in slide-in-from-left-6 duration-700 delay-100">
+                            <p>{project.description}</p>
+                        </div>
+                    </div>
+
+                    {/* Bottom: Metadata */}
+                    <div className="mt-12 lg:mt-auto pt-8 border-t border-arhos-black/10 flex flex-wrap gap-x-12 gap-y-6 text-sm font-sans text-arhos-black w-full animate-in fade-in slide-in-from-left-8 duration-700 delay-200">
                         <div>
                             <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Lokácia</span>
                             {project.location}
@@ -93,27 +107,17 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                             <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Rozloha</span>
                             {project.area}
                         </div>
-                        <div>
-                            <span className="block text-[10px] text-arhos-gray uppercase tracking-wider mb-1">Status</span>
-                            Dokončené
-                        </div>
-                    </div>
-
-                    <div className="prose prose-arhos text-arhos-gray font-sans text-lg leading-relaxed max-w-[65ch] mt-10 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-                        <p>
-                            {project.description}
-                        </p>
                     </div>
                 </div>
 
-                {/* --- Main Content (Visuals) - Uniform Stack --- */}
-                <div className="flex flex-col gap-16 md:gap-32 w-full max-w-[1600px] mx-auto">
+                {/* --- Right Column: Scrollable Images (60%) --- */}
+                <div className="lg:col-span-7 p-4 lg:p-4 lg:pr-12 lg:pt-12 pb-12 flex flex-col gap-4 lg:gap-8 bg-white">
                     {project.images.map((img, index) => (
-                        <div key={index} className="w-full">
+                        <div key={index} className="w-full relative group overflow-hidden bg-arhos-black/5">
                             <img
                                 src={img}
                                 alt={`${project.title} - view ${index + 1}`}
-                                className="w-full h-auto object-cover hover:opacity-95 transition-opacity duration-300 cursor-zoom-in shadow-sm"
+                                className="w-full h-auto object-cover hover:scale-[1.01] transition-transform duration-700 ease-out cursor-zoom-in"
                                 loading={index === 0 ? "eager" : "lazy"}
                                 onClick={() => setExpandedImage(img)}
                             />
