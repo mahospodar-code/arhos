@@ -55,11 +55,16 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
     // Helper for grid classes based on index
     const getGridClass = (index: number) => {
-        // Pattern: 0:Full, 1:Half, 2:Half, 3:Third, 4:Third, 5:Third -> Repeat
-        const patternIndex = index % 6;
-        if (patternIndex === 0) return "md:col-span-12"; // 1 per row
-        if (patternIndex === 1 || patternIndex === 2) return "md:col-span-6"; // 2 per row
-        return "md:col-span-4"; // 3 per row
+        // Pattern: Cycle of 7 images.
+        // First 3 images: Row of 3 (col-span-4) -> Portrait aspect
+        // Next 4 images: Row of 4 (col-span-3) -> Square aspect
+        const i = index % 7;
+
+        if (i < 3) {
+            return "md:col-span-4 aspect-[4/5]";
+        } else {
+            return "md:col-span-3 aspect-square";
+        }
     };
 
     // Scroll Reveal Hook (Simple Intersection Observer)
@@ -142,23 +147,25 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 </div>
 
                 {/* --- Main Content (Smart Grid) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-8 w-full max-w-[1800px] mx-auto">
-                    {project.images.map((img, index) => (
-                        <div key={index} className={`${getGridClass(index)}`}>
-                            <RevealOnScroll className="w-full h-full">
-                                <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
-                                    <img
-                                        src={img}
-                                        alt={`${project.title} - view ${index + 1}`}
-                                        className="w-full h-auto object-cover hover:scale-[1.01] transition-transform duration-700 ease-out cursor-zoom-in"
-                                        style={{ aspectRatio: getGridClass(index).includes('col-span-12') ? '16/9' : '4/5' }}
-                                        loading={index === 0 ? "eager" : "lazy"}
-                                        onClick={() => setExpandedImage(img)}
-                                    />
-                                </div>
-                            </RevealOnScroll>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-4 w-full max-w-[1920px] mx-auto">
+                    {project.images.map((img, index) => {
+                        const gridClass = getGridClass(index);
+                        return (
+                            <div key={index} className={`${gridClass}`}>
+                                <RevealOnScroll className="w-full h-full">
+                                    <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
+                                        <img
+                                            src={img}
+                                            alt={`${project.title} - view ${index + 1}`}
+                                            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            loading={index === 0 ? "eager" : "lazy"}
+                                            onClick={() => setExpandedImage(img)}
+                                        />
+                                    </div>
+                                </RevealOnScroll>
+                            </div>
+                        );
+                    })}
                 </div>
 
             </div>
