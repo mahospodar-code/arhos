@@ -41,44 +41,37 @@ export function ManifestoSection() {
     return () => ctx.revert();
   }, [t]); // Re-run animation if language changes (text changes)
 
-  // Scroll animation
+  // Scroll animation (Parallax / Fade out without pinning)
   useLayoutEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
     const ctx = gsap.context(() => {
-      const scrollTl = gsap.timeline({
+      // Create a timeline that scrub-animates based on scroll position
+      // removing "pin: true" allows natural scrolling
+      gsap.to(headlineRef.current, {
+        y: -100, // Move up slightly
+        opacity: 0, // Fade out
+        ease: "none",
         scrollTrigger: {
           trigger: section,
-          start: 'top top',
-          end: '+=130%',
-          pin: true,
-          scrub: 0.6,
-          onLeaveBack: () => {
-            // Reset to visible when scrolling back to top
-            gsap.set([headlineRef.current, ctaRef.current], {
-              opacity: 1,
-              y: 0,
-              scale: 1,
-            });
-          },
-        },
+          start: "top top",
+          end: "bottom top", // Animate over the height of the section
+          scrub: true,
+        }
       });
 
-      // EXIT phase (70% - 100%)
-      scrollTl.fromTo(
-        headlineRef.current,
-        { y: 0, opacity: 1 },
-        { y: '-22vh', opacity: 0, ease: 'power2.in' },
-        0.7
-      );
-
-      scrollTl.fromTo(
-        ctaRef.current,
-        { opacity: 1 },
-        { opacity: 0, ease: 'power2.in' },
-        0.75
-      );
+      gsap.to(ctaRef.current, {
+        y: -50,
+        opacity: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "center top",
+          scrub: true,
+        }
+      });
     }, section);
 
     return () => ctx.revert();
