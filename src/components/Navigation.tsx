@@ -137,26 +137,26 @@ export function Navigation({ onCloseProject }: NavigationProps) {
       {isMobileMenuOpen && (
         <div
           ref={mobileMenuRef}
-          className="fixed inset-0 bg-arhos-cream z-[100] flex flex-col items-center justify-center md:hidden"
+          className="fixed inset-0 bg-arhos-cream z-[90] flex flex-col items-center justify-center md:hidden pt-20"
         >
           <div className="flex flex-col gap-8 text-center">
             <button
               onClick={() => scrollToSection('projects')}
               className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
-              {t.nav.projects}
+              {t.nav.projects || 'Projekty'}
             </button>
             <button
               onClick={() => scrollToSection('approach')}
               className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
-              {t.nav.studio}
+              {t.nav.studio || 'Ateliér'}
             </button>
             <button
               onClick={() => scrollToSection('contact')}
               className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
-              {t.nav.contact}
+              {t.nav.contact || 'Kontakt'}
             </button>
 
             {/* Mobile Language Switcher */}
