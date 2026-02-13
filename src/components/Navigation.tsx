@@ -137,40 +137,40 @@ export function Navigation({ onCloseProject }: NavigationProps) {
       {isMobileMenuOpen && (
         <div
           ref={mobileMenuRef}
-          className="fixed inset-0 bg-arhos-cream z-[90] flex flex-col items-center justify-center md:hidden pt-20"
+          className="fixed inset-0 bg-arhos-cream/90 backdrop-blur-sm z-[90] flex flex-col items-center justify-center md:hidden pt-20"
         >
-          <div className="flex flex-col gap-8 text-center">
+          <div className="flex flex-col gap-6 text-center">
             <button
               onClick={() => scrollToSection('projects')}
-              className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
+              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
             >
               {t.nav.projects || 'Projekty'}
             </button>
             <button
               onClick={() => scrollToSection('approach')}
-              className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
+              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
             >
               {t.nav.studio || 'Ateliér'}
             </button>
             <button
               onClick={() => scrollToSection('contact')}
-              className="text-2xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
+              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
             >
               {t.nav.contact || 'Kontakt'}
             </button>
 
             {/* Mobile Language Switcher */}
-            <div className="flex items-center justify-center gap-4 mt-8 pt-8 border-t border-arhos-black/10">
+            <div className="flex items-center justify-center gap-4 mt-8 pt-8 border-t border-arhos-black/10 w-24 mx-auto">
               <button
                 onClick={() => { setLanguage('sk'); setIsMobileMenuOpen(false); }}
-                className={`text-lg font-display transition-colors ${language === 'sk' ? 'font-bold text-arhos-black' : 'font-medium text-arhos-gray'}`}
+                className={`text-sm font-display transition-colors ${language === 'sk' ? 'font-bold text-arhos-black' : 'font-medium text-arhos-gray'}`}
               >
                 SK
               </button>
-              <span className="text-arhos-black/40 text-sm">|</span>
+              <span className="text-arhos-black/40 text-xs">|</span>
               <button
                 onClick={() => { setLanguage('en'); setIsMobileMenuOpen(false); }}
-                className={`text-lg font-display transition-colors ${language === 'en' ? 'font-bold text-arhos-black' : 'font-medium text-arhos-gray'}`}
+                className={`text-sm font-display transition-colors ${language === 'en' ? 'font-bold text-arhos-black' : 'font-medium text-arhos-gray'}`}
               >
                 EN
               </button>
