@@ -1,11 +1,61 @@
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { gsap } from 'gsap';
+import { useLanguage } from '../context/LanguageContext';
 
-// ... (imports remain the same)
+interface NavigationProps {
+  onCloseProject?: () => void;
+}
 
 export function Navigation({ onCloseProject }: NavigationProps) {
-  // ... (hooks remain the same)
+  const navRef = useRef<HTMLElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { language, setLanguage, t } = useLanguage();
 
-  // ... (effects remain the same)
+  useEffect(() => {
+    // Initial animation
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        navRef.current,
+        { y: -20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, delay: 0.3, ease: 'power3.out' }
+      );
+    }, navRef); // Add scope
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      // Wait for portal to mount
+      setTimeout(() => {
+        if (mobileMenuRef.current) {
+          gsap.fromTo(
+            mobileMenuRef.current,
+            { opacity: 0, y: -20 },
+            { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+          );
+        }
+      }, 10);
+
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isMobileMenuOpen]);
+
+  const scrollToSection = (id: string) => {
+    setIsMobileMenuOpen(false);
+    if (onCloseProject) onCloseProject(); // Close project detail if open
+
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
