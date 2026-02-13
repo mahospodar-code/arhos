@@ -142,19 +142,19 @@ export function Navigation({ onCloseProject }: NavigationProps) {
           <div className="flex flex-col gap-6 text-center">
             <button
               onClick={() => scrollToSection('projects')}
-              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
+              className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.projects || 'Projekty'}
             </button>
             <button
               onClick={() => scrollToSection('approach')}
-              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
+              className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.studio || 'Ateliér'}
             </button>
             <button
               onClick={() => scrollToSection('contact')}
-              className="text-lg font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors uppercase tracking-widest"
+              className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.contact || 'Kontakt'}
             </button>
