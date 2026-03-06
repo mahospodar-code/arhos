@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 // --- Configuration ---
 const ADMIN_PASSWORD = 'arhos2026';
 
-// Type for project data
+// --- Types ---
 interface ProjectItem {
   id: number;
   title: string;
@@ -20,21 +20,42 @@ interface ProjectsData {
   en: ProjectItem[];
 }
 
-// --- Auto Translate (MyMemory API - free, no key needed) ---
+interface BlogPost {
+  id: number;
+  slug: string;
+  title: string;
+  date: string;
+  coverImage: string;
+  content: string;
+  seoKeywords: string;
+}
+
+interface BlogData {
+  sk: BlogPost[];
+  en: BlogPost[];
+}
+
+// --- Utils ---
 async function autoTranslate(text: string): Promise<string> {
   if (!text.trim()) return '';
   try {
-    const res = await fetch(
-      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=sk|en`
-    );
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=sk|en`);
     const data = await res.json();
     return data.responseData?.translatedText || text;
   } catch {
-    return text; // Fallback to original if translation fails
+    return text;
   }
 }
 
-// --- Password Gate ---
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/[^a-z0-9]+/g, '-') // Replace spaces and special chars with hyphen
+    .replace(/(^-|-$)+/g, ''); // Trim hyphens
+}
+
+// --- Components ---
 function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
@@ -59,35 +80,17 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Heslo"
-          className={`w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-arhos-gray/30'} font-sans text-sm focus:outline-none focus:border-arhos-terracotta transition-colors`}
+          className={`w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-arhos-gray/30'} font-sans text-sm focus:outline-none focus:border-arhos-terracotta`}
           autoFocus
         />
-        <button
-          type="submit"
-          className="w-full mt-4 bg-arhos-black text-white py-3 font-display font-medium hover:bg-arhos-terracotta transition-colors"
-        >
-          Prihlásiť sa
-        </button>
-        {error && <p className="text-red-500 text-sm mt-3 text-center font-sans">Nesprávne heslo</p>}
+        <button type="submit" className="w-full mt-4 bg-arhos-black text-white py-3 font-display font-medium hover:bg-arhos-terracotta">Prihlásiť sa</button>
       </form>
     </div>
   );
 }
 
-// --- Project Form ---
-function ProjectForm({
-  project,
-  enProject,
-  onSave,
-  onCancel,
-}: {
-  project?: ProjectItem;
-  enProject?: ProjectItem;
-  onSave: (sk: ProjectItem, en: ProjectItem) => void;
-  onCancel: () => void;
-}) {
-  const isEdit = !!project;
-
+// --- Project Form (from previous) ---
+function ProjectForm({ project, enProject, onSave, onCancel }: { project?: ProjectItem; enProject?: ProjectItem; onSave: (sk: ProjectItem, en: ProjectItem) => void; onCancel: () => void; }) {
   const [titleSk, setTitleSk] = useState(project?.title || '');
   const [titleEn, setTitleEn] = useState(enProject?.title || '');
   const [locationSk, setLocationSk] = useState(project?.location || '');
@@ -102,186 +105,137 @@ function ProjectForm({
   const [translating, setTranslating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const catMap: Record<string, string> = {
-    'Rezidenčné': 'Residential',
-    'Interiéry': 'Interiors',
-    'Komerčné': 'Commercial',
-  };
+  const catMap: Record<string, string> = { 'Rezidenčné': 'Residential', 'Interiéry': 'Interiors', 'Komerčné': 'Commercial' };
 
-  // --- AUTO TRANSLATE ---
   const handleAutoTranslate = async () => {
     setTranslating(true);
     try {
-      const [tTitle, tLocation, tDesc] = await Promise.all([
-        autoTranslate(titleSk),
-        autoTranslate(locationSk),
-        autoTranslate(descSk),
-      ]);
-      setTitleEn(tTitle);
-      setLocationEn(tLocation);
-      setDescEn(tDesc);
-    } catch {
-      // silent fail, fields stay as-is
-    } finally {
-      setTranslating(false);
-    }
-  };
-
-  const handleAddImageUrl = () => {
-    if (newImageUrl.trim()) {
-      setImageUrls([...imageUrls, newImageUrl.trim()]);
-      setNewImageUrl('');
-    }
+      const [tTitle, tLoc, tDesc] = await Promise.all([autoTranslate(titleSk), autoTranslate(locationSk), autoTranslate(descSk)]);
+      setTitleEn(tTitle); setLocationEn(tLoc); setDescEn(tDesc);
+    } finally { setTranslating(false); }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    Array.from(files).forEach((file) => {
-      const safeName = file.name.replace(/\s+/g, '_').toLowerCase();
-      setImageUrls((prev) => [...prev, `/images/${safeName}`]);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index));
+    if (!e.target.files) return;
+    const newImgs = Array.from(e.target.files).map(f => `/images/${f.name.replace(/\s+/g, '_').toLowerCase()}`);
+    setImageUrls([...imageUrls, ...newImgs]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const skItem: ProjectItem = {
-      id: project?.id || 0, // Will be assigned by parent
-      title: titleSk,
-      category: category,
-      location: locationSk,
-      year,
-      images: imageUrls,
-      description: descSk,
-      area,
-    };
-
-    const enItem: ProjectItem = {
-      id: project?.id || 0,
-      title: titleEn || titleSk,
-      category: catMap[category] || 'Residential',
-      location: locationEn || locationSk,
-      year,
-      images: imageUrls,
-      description: descEn || descSk,
-      area,
-    };
-
-    onSave(skItem, enItem);
+    onSave(
+      { id: project?.id || 0, title: titleSk, category, location: locationSk, year, images: imageUrls, description: descSk, area },
+      { id: project?.id || 0, title: titleEn || titleSk, category: catMap[category] || category, location: locationEn || locationSk, year, images: imageUrls, description: descEn || descSk, area }
+    );
   };
 
-  const inputClass = 'w-full px-3 py-2 border border-arhos-gray/20 font-sans text-sm focus:outline-none focus:border-arhos-terracotta transition-colors bg-white';
+  const inputClass = 'w-full px-3 py-2 border border-arhos-gray/20 font-sans text-sm focus:outline-none focus:border-arhos-terracotta bg-white';
   const labelClass = 'font-display text-xs text-arhos-gray uppercase tracking-wider mb-1 block';
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg">
-      <h2 className="font-display text-xl font-bold text-arhos-black mb-6">
-        {isEdit ? 'Upraviť projekt' : 'Nový projekt'}
-      </h2>
-
+    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg mb-8">
+      <h2 className="font-display text-xl font-bold mb-6">{project ? 'Upraviť projekt' : 'Nový projekt'}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* SK Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="font-display text-sm font-bold text-arhos-black">🇸🇰 Slovensky</p>
-          </div>
-          <div>
-            <label className={labelClass}>Názov</label>
-            <input className={inputClass} value={titleSk} onChange={(e) => setTitleSk(e.target.value)} required />
-          </div>
-          <div>
-            <label className={labelClass}>Lokácia</label>
-            <input className={inputClass} value={locationSk} onChange={(e) => setLocationSk(e.target.value)} required />
-          </div>
-          <div>
-            <label className={labelClass}>Popis</label>
-            <textarea className={`${inputClass} h-24 resize-none`} value={descSk} onChange={(e) => setDescSk(e.target.value)} required />
-          </div>
+          <p className="font-display text-sm font-bold">🇸🇰 Slovensky</p>
+          <div><label className={labelClass}>Názov</label><input className={inputClass} value={titleSk} onChange={e => setTitleSk(e.target.value)} required /></div>
+          <div><label className={labelClass}>Lokácia</label><input className={inputClass} value={locationSk} onChange={e => setLocationSk(e.target.value)} required /></div>
+          <div><label className={labelClass}>Popis</label><textarea className={`${inputClass} h-24`} value={descSk} onChange={e => setDescSk(e.target.value)} required /></div>
         </div>
-
-        {/* EN Column */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="font-display text-sm font-bold text-arhos-black">🇬🇧 English</p>
-            <button
-              type="button"
-              onClick={handleAutoTranslate}
-              disabled={translating || (!titleSk && !descSk)}
-              className="px-3 py-1.5 text-xs font-display bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-40"
-            >
-              {translating ? '⏳ Prekladám...' : '🔄 Auto-preklad'}
-            </button>
+          <div className="flex justify-between items-center">
+            <p className="font-display text-sm font-bold">🇬🇧 English</p>
+            <button type="button" onClick={handleAutoTranslate} disabled={translating} className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5">{translating ? '⏳' : '🔄'} Auto-preklad</button>
           </div>
-          <div>
-            <label className={labelClass}>Title</label>
-            <input className={inputClass} value={titleEn} onChange={(e) => setTitleEn(e.target.value)} placeholder="Automaticky preložené" />
-          </div>
-          <div>
-            <label className={labelClass}>Location</label>
-            <input className={inputClass} value={locationEn} onChange={(e) => setLocationEn(e.target.value)} placeholder="Automaticky preložené" />
-          </div>
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea className={`${inputClass} h-24 resize-none`} value={descEn} onChange={(e) => setDescEn(e.target.value)} placeholder="Automaticky preložené" />
-          </div>
+          <div><label className={labelClass}>Title</label><input className={inputClass} value={titleEn} onChange={e => setTitleEn(e.target.value)} /></div>
+          <div><label className={labelClass}>Location</label><input className={inputClass} value={locationEn} onChange={e => setLocationEn(e.target.value)} /></div>
+          <div><label className={labelClass}>Description</label><textarea className={`${inputClass} h-24`} value={descEn} onChange={e => setDescEn(e.target.value)} /></div>
         </div>
       </div>
-
-      {/* Common Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-        <div>
-          <label className={labelClass}>Rok</label>
-          <input className={inputClass} value={year} onChange={(e) => setYear(e.target.value)} required />
-        </div>
-        <div>
-          <label className={labelClass}>Rozloha</label>
-          <input className={inputClass} value={area} onChange={(e) => setArea(e.target.value)} placeholder="napr. 150 m²" required />
-        </div>
-        <div>
-          <label className={labelClass}>Kategória</label>
-          <select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="Rezidenčné">Rezidenčné</option>
-            <option value="Interiéry">Interiéry</option>
-            <option value="Komerčné">Komerčné</option>
-          </select>
-        </div>
+      <div className="grid grid-cols-3 gap-4 mt-6">
+        <div><label className={labelClass}>Rok</label><input className={inputClass} value={year} onChange={e => setYear(e.target.value)} required /></div>
+        <div><label className={labelClass}>Rozloha</label><input className={inputClass} value={area} onChange={e => setArea(e.target.value)} required /></div>
+        <div><label className={labelClass}>Kategória</label><select className={inputClass} value={category} onChange={e => setCategory(e.target.value)}><option>Rezidenčné</option><option>Interiéry</option><option>Komerčné</option></select></div>
       </div>
-
-      {/* Images */}
       <div className="mt-6">
-        <label className={labelClass}>Obrázky (cesty k súborom v /public/images/)</label>
-        <div className="flex gap-2 mt-2">
-          <input className={`${inputClass} flex-1`} value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="/images/projekt_nazov.webp" />
-          <button type="button" onClick={handleAddImageUrl} className="px-4 py-2 bg-arhos-black text-white text-sm font-display hover:bg-arhos-terracotta transition-colors">+</button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-arhos-gray/20 text-arhos-black text-sm font-display hover:bg-arhos-gray/30 transition-colors">📁</button>
-          <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
+        <label className={labelClass}>Obrázky (/public/images/)</label>
+        <div className="flex gap-2 mb-2">
+          <input className={inputClass} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="/images/foto.webp" />
+          <button type="button" onClick={() => { if(newImageUrl) setImageUrls([...imageUrls, newImageUrl]); setNewImageUrl(''); }} className="px-4 bg-arhos-black text-white">+</button>
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 bg-gray-100">📁</button>
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
         </div>
-        {imageUrls.length > 0 && (
-          <div className="mt-3 space-y-1">
-            {imageUrls.map((url, i) => (
-              <div key={i} className="flex items-center gap-2 bg-arhos-cream px-3 py-1.5 text-sm font-sans">
-                <span className="text-arhos-gray text-xs">{i + 1}.</span>
-                <span className="flex-1 truncate">{url}</span>
-                <button type="button" onClick={() => removeImage(i)} className="text-red-500 hover:text-red-700 text-xs">✕</button>
-              </div>
-            ))}
-          </div>
-        )}
+        {imageUrls.map((url, idx) => <div key={idx} className="flex gap-2 text-sm bg-gray-50 p-2 mb-1">{url} <button type="button" onClick={()=>setImageUrls(imageUrls.filter((_,i)=>i!==idx))} className="text-red-500 ml-auto">✕</button></div>)}
       </div>
-
-      {/* Actions */}
       <div className="flex gap-3 mt-8">
-        <button type="submit" className="flex-1 bg-arhos-terracotta text-white py-3 font-display font-medium hover:bg-arhos-terracotta/90 transition-colors">
-          {isEdit ? 'Uložiť zmeny' : 'Pridať projekt'}
-        </button>
-        <button type="button" onClick={onCancel} className="px-6 py-3 border border-arhos-gray/30 font-display text-sm hover:bg-arhos-cream transition-colors">
-          Zrušiť
-        </button>
+        <button type="submit" className="flex-1 bg-arhos-terracotta text-white py-3">Uložiť</button>
+        <button type="button" onClick={onCancel} className="px-6 py-3 border">Zrušiť</button>
+      </div>
+    </form>
+  );
+}
+
+// --- Blog Form ---
+function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?: BlogPost; onSave: (sk: BlogPost, en: BlogPost) => void; onCancel: () => void; }) {
+  const [titleSk, setTitleSk] = useState(post?.title || '');
+  const [titleEn, setTitleEn] = useState(enPost?.title || '');
+  const [contentSk, setContentSk] = useState(post?.content || '');
+  const [contentEn, setContentEn] = useState(enPost?.content || '');
+  const [date, setDate] = useState(post?.date || new Date().toISOString().split('T')[0]);
+  const [coverImage, setCoverImage] = useState(post?.coverImage || '');
+  const [seoKeywordsSk, setSeoKeywordsSk] = useState(post?.seoKeywords || '');
+  const [seoKeywordsEn, setSeoKeywordsEn] = useState(enPost?.seoKeywords || '');
+  const [translating, setTranslating] = useState(false);
+
+  const handleAutoTranslate = async () => {
+    setTranslating(true);
+    try {
+      const [tTitle, tContent, tSeo] = await Promise.all([autoTranslate(titleSk), autoTranslate(contentSk), autoTranslate(seoKeywordsSk)]);
+      setTitleEn(tTitle); setContentEn(tContent); setSeoKeywordsEn(tSeo);
+    } finally { setTranslating(false); }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const slug = generateSlug(titleSk);
+    const enSlug = generateSlug(titleEn || titleSk);
+    
+    onSave(
+      { id: post?.id || 0, slug, title: titleSk, date, coverImage, content: contentSk, seoKeywords: seoKeywordsSk },
+      { id: post?.id || 0, slug: enSlug, title: titleEn || titleSk, date, coverImage, content: contentEn || contentSk, seoKeywords: seoKeywordsEn || seoKeywordsSk }
+    );
+  };
+
+  const inputClass = 'w-full px-3 py-2 border border-arhos-gray/20 font-sans text-sm focus:outline-none focus:border-arhos-terracotta bg-white';
+  const labelClass = 'font-display text-xs text-arhos-gray uppercase tracking-wider mb-1 block';
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg mb-8 border-t-4 border-blue-500">
+      <h2 className="font-display text-xl font-bold mb-6">{post ? 'Upraviť článok' : 'Nový článok'}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <p className="font-display text-sm font-bold">🇸🇰 Slovensky</p>
+          <div><label className={labelClass}>Nadpis</label><input className={inputClass} value={titleSk} onChange={e => setTitleSk(e.target.value)} required /></div>
+          <div><label className={labelClass}>Obsah (odseky oddelené prázdnym riadkom)</label><textarea className={`${inputClass} h-48`} value={contentSk} onChange={e => setContentSk(e.target.value)} required /></div>
+          <div><label className={labelClass}>SEO Klúčové slová (oddelené čiarkou)</label><input className={inputClass} value={seoKeywordsSk} onChange={e => setSeoKeywordsSk(e.target.value)} required /></div>
+        </div>
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="font-display text-sm font-bold">🇬🇧 English</p>
+            <button type="button" onClick={handleAutoTranslate} disabled={translating} className="text-xs bg-blue-50 text-blue-700 px-3 py-1.5">{translating ? '⏳' : '🔄'} Auto-preklad</button>
+          </div>
+          <div><label className={labelClass}>Title</label><input className={inputClass} value={titleEn} onChange={e => setTitleEn(e.target.value)} /></div>
+          <div><label className={labelClass}>Content</label><textarea className={`${inputClass} h-48`} value={contentEn} onChange={e => setContentEn(e.target.value)} /></div>
+          <div><label className={labelClass}>SEO Keywords</label><input className={inputClass} value={seoKeywordsEn} onChange={e => setSeoKeywordsEn(e.target.value)} /></div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <div><label className={labelClass}>Dátum</label><input type="date" className={inputClass} value={date} onChange={e => setDate(e.target.value)} required /></div>
+        <div><label className={labelClass}>Titulný obrázok (/images/...)</label><input className={inputClass} value={coverImage} onChange={e => setCoverImage(e.target.value)} required placeholder="/images/blog_cover.jpg" /></div>
+      </div>
+      <div className="flex gap-3 mt-8">
+        <button type="submit" className="flex-1 bg-blue-600 text-white py-3">Uložiť článok</button>
+        <button type="button" onClick={onCancel} className="px-6 py-3 border">Zrušiť</button>
       </div>
     </form>
   );
@@ -289,241 +243,192 @@ function ProjectForm({
 
 // --- Main Admin Page ---
 export function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('arhos_admin') === 'true';
-  });
-
+  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem('arhos_admin') === 'true');
+  const [activeTab, setActiveTab] = useState<'projects' | 'blog'>('projects');
+  
+  // Data State
   const [skProjects, setSkProjects] = useState<ProjectItem[]>([]);
   const [enProjects, setEnProjects] = useState<ProjectItem[]>([]);
+  const [skBlog, setSkBlog] = useState<BlogPost[]>([]);
+  const [enBlog, setEnBlog] = useState<BlogPost[]>([]);
+  
   const [loaded, setLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectItem | undefined>();
-  const [hasChanges, setHasChanges] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(undefined);
+  
+  const [hasChanges, setHasChanges] = useState({ projects: false, blog: false });
   const [publishing, setPublishing] = useState(false);
-  const [publishStatus, setPublishStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [publishStatus, setPublishStatus] = useState<{ type: 'success' | 'error'; message: string; tab: string } | null>(null);
 
-  // Load projects from JSON
-  if (!loaded && isAuthenticated) {
-    fetch('/data/projects.json')
-      .then((res) => res.json())
-      .then((data: ProjectsData) => {
-        setSkProjects(data.sk);
-        setEnProjects(data.en);
+  useEffect(() => {
+    if (isAuthenticated && !loaded) {
+      Promise.all([
+        fetch('/data/projects.json').then(r => r.json()).catch(() => ({ sk: [], en: [] })),
+        fetch('/data/blog.json').then(r => r.json()).catch(() => ({ sk: [], en: [] }))
+      ]).then(([projData, blogData]: [ProjectsData, BlogData]) => {
+        setSkProjects(projData.sk || []);
+        setEnProjects(projData.en || []);
+        setSkBlog(blogData.sk || []);
+        setEnBlog(blogData.en || []);
         setLoaded(true);
-      })
-      .catch(() => setLoaded(true));
-  }
-
-  if (!isAuthenticated) {
-    return <PasswordGate onUnlock={() => setIsAuthenticated(true)} />;
-  }
-
-  const handleSave = (sk: ProjectItem, en: ProjectItem) => {
-    if (editingProject) {
-      setSkProjects((prev) => prev.map((p) => (p.id === editingProject.id ? { ...sk, id: editingProject.id } : p)));
-      setEnProjects((prev) => prev.map((p) => (p.id === editingProject.id ? { ...en, id: editingProject.id } : p)));
-    } else {
-      const nextId = Math.max(...skProjects.map((p) => p.id), 0) + 1;
-      setSkProjects((prev) => [...prev, { ...sk, id: nextId }]);
-      setEnProjects((prev) => [...prev, { ...en, id: nextId }]);
+      });
     }
-    setShowForm(false);
-    setEditingProject(undefined);
-    setHasChanges(true);
+  }, [isAuthenticated, loaded]);
+
+  if (!isAuthenticated) return <PasswordGate onUnlock={() => setIsAuthenticated(true)} />;
+
+  // Handlers for Projects
+  const handleSaveProject = (sk: ProjectItem, en: ProjectItem) => {
+    if (editingItem) {
+      setSkProjects(prev => prev.map(p => p.id === editingItem.id ? { ...sk, id: editingItem.id } : p));
+      setEnProjects(prev => prev.map(p => p.id === editingItem.id ? { ...en, id: editingItem.id } : p));
+    } else {
+      const nextId = Math.max(...skProjects.map(p => p.id), 0) + 1;
+      setSkProjects(prev => [...prev, { ...sk, id: nextId }]);
+      setEnProjects(prev => [...prev, { ...en, id: nextId }]);
+    }
+    setShowForm(false); setEditingItem(undefined); setHasChanges(p => ({ ...p, projects: true }));
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm('Naozaj chcete odstrániť tento projekt?')) return;
-    setSkProjects((prev) => prev.filter((p) => p.id !== id));
-    setEnProjects((prev) => prev.filter((p) => p.id !== id));
-    setHasChanges(true);
+  const moveProject = (index: number, dir: 'up' | 'down') => {
+    const ni = dir === 'up' ? index - 1 : index + 1;
+    if (ni < 0 || ni >= skProjects.length) return;
+    const nSk = [...skProjects]; const nEn = [...enProjects];
+    [nSk[index], nSk[ni]] = [nSk[ni], nSk[index]];
+    [nEn[index], nEn[ni]] = [nEn[ni], nEn[index]];
+    setSkProjects(nSk); setEnProjects(nEn); setHasChanges(p => ({ ...p, projects: true }));
   };
 
-  const handleEdit = (project: ProjectItem) => {
-    setEditingProject(project);
-    setShowForm(true);
+  const deleteProject = (id: number) => {
+    if (!confirm('Zmazať projekt?')) return;
+    setSkProjects(prev => prev.filter(p => p.id !== id));
+    setEnProjects(prev => prev.filter(p => p.id !== id));
+    setHasChanges(p => ({ ...p, projects: true }));
   };
 
-  // --- REORDER PROJECTS ---
-  const moveProject = (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= skProjects.length) return;
-
-    const newSk = [...skProjects];
-    const newEn = [...enProjects];
-    [newSk[index], newSk[newIndex]] = [newSk[newIndex], newSk[index]];
-    [newEn[index], newEn[newIndex]] = [newEn[newIndex], newEn[index]];
-    setSkProjects(newSk);
-    setEnProjects(newEn);
-    setHasChanges(true);
+  // Handlers for Blog
+  const handleSaveBlog = (sk: BlogPost, en: BlogPost) => {
+    if (editingItem) {
+      setSkBlog(prev => prev.map(p => p.id === editingItem.id ? { ...sk, id: editingItem.id } : p));
+      setEnBlog(prev => prev.map(p => p.id === editingItem.id ? { ...en, id: editingItem.id } : p));
+    } else {
+      const nextId = Math.max(...skBlog.map(p => p.id), 0) + 1;
+      setSkBlog(prev => [{ ...sk, id: nextId }, ...prev]); // Add to top
+      setEnBlog(prev => [{ ...en, id: nextId }, ...prev]);
+    }
+    setShowForm(false); setEditingItem(undefined); setHasChanges(p => ({ ...p, blog: true }));
   };
 
-  // --- PUBLISH (auto-commit to GitHub) ---
-  const handlePublish = async () => {
+  const deleteBlog = (id: number) => {
+    if (!confirm('Zmazať článok?')) return;
+    setSkBlog(prev => prev.filter(p => p.id !== id));
+    setEnBlog(prev => prev.filter(p => p.id !== id));
+    setHasChanges(p => ({ ...p, blog: true }));
+  };
+
+  // Publish
+  const handlePublish = async (type: 'projects' | 'blog') => {
     setPublishing(true);
-    setPublishStatus(null);
-
-    const data: ProjectsData = { sk: skProjects, en: enProjects };
-
+    const data = type === 'projects' ? { sk: skProjects, en: enProjects } : { sk: skBlog, en: enBlog };
+    
     try {
       const res = await fetch('/api/publish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: ADMIN_PASSWORD, projects: data }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, type, data }),
       });
-
       const result = await res.json();
-
       if (res.ok && result.success) {
-        setPublishStatus({ type: 'success', message: result.message });
-        setHasChanges(false);
+        setPublishStatus({ type: 'success', message: 'Úspešne publikované! Web sa onedlho aktualizuje.', tab: type });
+        setHasChanges(p => ({ ...p, [type]: false }));
       } else {
-        setPublishStatus({ type: 'error', message: result.error || 'Publikovanie zlyhalo' });
+        setPublishStatus({ type: 'error', message: result.error || 'Nastala chyba pri publikovaní.', tab: type });
       }
     } catch {
-      setPublishStatus({ type: 'error', message: 'Chyba pripojenia k serveru.' });
+      setPublishStatus({ type: 'error', message: 'Chyba sieťového pripojenia.', tab: type });
     } finally {
       setPublishing(false);
     }
   };
 
-  // --- DOWNLOAD (fallback) ---
-  const handleDownload = () => {
-    const data: ProjectsData = { sk: skProjects, en: enProjects };
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'projects.json';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('arhos_admin');
-    setIsAuthenticated(false);
-  };
-
-  // Find EN project for editing
-  const editingEnProject = editingProject
-    ? enProjects.find((p) => p.id === editingProject.id)
-    : undefined;
-
   return (
     <div className="min-h-screen bg-arhos-cream">
-      {/* Header */}
-      <header className="bg-arhos-black text-white px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-4">
-          <a href="/" className="font-display text-lg font-bold hover:text-arhos-terracotta transition-colors">ARHOS</a>
-          <span className="text-white/40 text-sm font-sans">Admin Panel</span>
+      <header className="bg-arhos-black text-white px-6 py-4 flex items-center justify-between sticky top-0 z-[100]">
+        <div className="flex items-center gap-8">
+          <a href="/" className="font-display font-bold hover:text-arhos-terracotta">ARHOS</a>
+          <nav className="flex gap-4">
+            <button onClick={() => { setActiveTab('projects'); setShowForm(false); setPublishStatus(null); }} className={`font-sans text-sm pb-1 ${activeTab === 'projects' ? 'border-b-2 border-white' : 'text-white/50'}`}>Projekty</button>
+            <button onClick={() => { setActiveTab('blog'); setShowForm(false); setPublishStatus(null); }} className={`font-sans text-sm pb-1 ${activeTab === 'blog' ? 'border-b-2 border-white' : 'text-white/50'}`}>Magazín (Blog)</button>
+          </nav>
         </div>
-        <div className="flex items-center gap-3">
-          {hasChanges && (
-            <button
-              onClick={handlePublish}
-              disabled={publishing}
-              className="px-5 py-2 bg-green-600 text-white text-sm font-display hover:bg-green-700 transition-colors animate-pulse disabled:animate-none disabled:opacity-60"
-            >
-              {publishing ? '⏳ Publikujem...' : '🚀 Publikovať'}
+        <div className="flex gap-4 items-center">
+          {hasChanges[activeTab] && (
+            <button onClick={() => handlePublish(activeTab)} disabled={publishing} className="bg-green-600 px-4 py-2 text-sm font-bold animate-pulse">
+              {publishing ? '⏳ ...' : `🚀 Publikovať ${activeTab === 'projects'? 'Projekty' : 'Blog'}`}
             </button>
           )}
-          <button onClick={handleDownload} className="px-3 py-2 text-white/40 text-xs font-sans hover:text-white transition-colors" title="Záložné stiahnutie">
-            ⬇️
-          </button>
-          <button onClick={handleLogout} className="px-4 py-2 text-white/60 text-sm font-sans hover:text-white transition-colors">
-            Odhlásiť sa
-          </button>
+          <button onClick={() => { sessionStorage.clear(); location.reload(); }} className="text-white/60 hover:text-white text-sm">Odhlásiť</button>
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Publish Status */}
-        {publishStatus && (
-          <div className={`mb-6 p-4 text-sm font-sans ${publishStatus.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
-            {publishStatus.type === 'success' ? '✅ ' : '❌ '}{publishStatus.message}
+      <main className="max-w-5xl mx-auto px-6 py-8">
+        {publishStatus?.tab === activeTab && (
+          <div className={`p-4 mb-6 ${publishStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {publishStatus.message}
           </div>
         )}
-        {/* Add Button */}
+
         {!showForm && (
-          <button
-            onClick={() => { setEditingProject(undefined); setShowForm(true); }}
-            className="mb-6 px-6 py-3 bg-arhos-black text-white font-display font-medium hover:bg-arhos-terracotta transition-colors"
-          >
-            + Pridať nový projekt
+          <button onClick={() => { setEditingItem(undefined); setShowForm(true); }} className={`mb-6 px-6 py-3 text-white font-bold ${activeTab === 'projects' ? 'bg-arhos-black' : 'bg-blue-600'}`}>
+            + Pridať {activeTab === 'projects' ? 'projekt' : 'článok'}
           </button>
         )}
 
-        {/* Form */}
-        {showForm && (
-          <div className="mb-8">
-            <ProjectForm
-              project={editingProject}
-              enProject={editingEnProject}
-              onSave={handleSave}
-              onCancel={() => { setShowForm(false); setEditingProject(undefined); }}
-            />
-          </div>
+        {/* PROJECTS TAB */}
+        {activeTab === 'projects' && (
+          <>
+            {showForm && <ProjectForm project={editingItem} enProject={editingItem ? enProjects.find(p => p.id === editingItem.id) : undefined} onSave={handleSaveProject} onCancel={() => setShowForm(false)} />}
+            <div className="space-y-3">
+              {skProjects.map((p, i) => (
+                <div key={p.id} className="bg-white p-4 flex gap-4 items-center group shadow-sm">
+                  <div className="flex flex-col gap-1">
+                    <button onClick={() => moveProject(i, 'up')} disabled={i===0} className="text-xs disabled:opacity-20">▲</button>
+                    <button onClick={() => moveProject(i, 'down')} disabled={i===skProjects.length-1} className="text-xs disabled:opacity-20">▼</button>
+                  </div>
+                  <div className="w-16 h-12 bg-gray-100">{p.images[0] && <img src={p.images[0]} className="w-full h-full object-cover" alt=""/>}</div>
+                  <div className="flex-1 font-display font-medium">{p.title}</div>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100">
+                    <button onClick={() => { setEditingItem(p); setShowForm(true); }} className="bg-gray-100 px-3 py-1 text-sm">Upraviť</button>
+                    <button onClick={() => deleteProject(p.id)} className="bg-red-50 text-red-600 px-3 py-1 text-sm">Zmazať</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Projects List */}
-        <div className="space-y-4">
-          <h2 className="font-display text-lg font-bold text-arhos-black">
-            Projekty ({skProjects.length})
-          </h2>
-          {skProjects.map((project, index) => (
-            <div key={project.id} className="bg-white p-4 shadow-sm flex items-center gap-4 group hover:shadow-md transition-shadow">
-              {/* Reorder Buttons */}
-              <div className="flex flex-col gap-0.5">
-                <button
-                  onClick={() => moveProject(index, 'up')}
-                  disabled={index === 0}
-                  className="px-1.5 py-0.5 text-xs text-arhos-gray hover:text-arhos-black hover:bg-arhos-cream transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                  title="Posunúť hore"
-                >▲</button>
-                <button
-                  onClick={() => moveProject(index, 'down')}
-                  disabled={index === skProjects.length - 1}
-                  className="px-1.5 py-0.5 text-xs text-arhos-gray hover:text-arhos-black hover:bg-arhos-cream transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-                  title="Posunúť dole"
-                >▼</button>
-              </div>
-              <div className="w-20 h-16 bg-arhos-cream overflow-hidden flex-shrink-0">
-                {project.images[0] && <img src={project.images[0]} alt="" className="w-full h-full object-cover" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-display font-bold text-arhos-black truncate">{project.title}</h3>
-                <p className="text-sm text-arhos-gray font-sans truncate">
-                  {project.category} · {project.location} · {project.year} · {project.images.length} fotiek
-                </p>
-              </div>
-              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => handleEdit(project)} className="px-3 py-1.5 text-sm font-display text-arhos-black bg-arhos-cream hover:bg-arhos-terracotta hover:text-white transition-colors">
-                  ✏️ Upraviť
-                </button>
-                <button onClick={() => handleDelete(project.id)} className="px-3 py-1.5 text-sm font-display text-red-600 bg-red-50 hover:bg-red-500 hover:text-white transition-colors">
-                  🗑️ Zmazať
-                </button>
-              </div>
+        {/* BLOG TAB */}
+        {activeTab === 'blog' && (
+          <>
+            {showForm && <BlogForm post={editingItem} enPost={editingItem ? enBlog.find(p => p.id === editingItem.id) : undefined} onSave={handleSaveBlog} onCancel={() => setShowForm(false)} />}
+            <div className="space-y-3">
+              {skBlog.map((p) => (
+                <div key={p.id} className="bg-white p-4 flex gap-4 items-center group shadow-sm border-l-4 border-blue-500">
+                  <div className="w-16 h-12 bg-gray-100">{p.coverImage && <img src={p.coverImage} className="w-full h-full object-cover" alt=""/>}</div>
+                  <div className="flex-1">
+                    <div className="font-display font-medium">{p.title}</div>
+                    <div className="text-xs text-gray-400">{p.date}</div>
+                  </div>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100">
+                    <button onClick={() => { setEditingItem(p); setShowForm(true); }} className="bg-gray-100 px-3 py-1 text-sm">Upraviť</button>
+                    <button onClick={() => deleteBlog(p.id)} className="bg-red-50 text-red-600 px-3 py-1 text-sm">Zmazať</button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
 
-        {/* Instructions */}
-        <div className="mt-12 bg-white p-6 shadow-sm border-t-2 border-arhos-terracotta">
-          <h3 className="font-display font-bold text-arhos-black mb-3">📖 Ako pridať projekt</h3>
-          <ol className="list-decimal list-inside text-sm text-arhos-gray font-sans space-y-2">
-            <li>Nahrajte fotky projektu do priečinka <code className="bg-arhos-cream px-1">public/images/</code> vo formáte WebP</li>
-            <li>Kliknite na <strong>"+ Pridať nový projekt"</strong></li>
-            <li>Vyplňte údaje v slovenčine → kliknite <strong>"🔄 Auto-preklad"</strong> → angličtina sa doplní sama</li>
-            <li>Pridajte cesty k obrázkom</li>
-            <li>Kliknite na zelené tlačidlo <strong>"🚀 Publikovať"</strong> — zmeny sa automaticky nasadia na web</li>
-          </ol>
-          <p className="text-xs text-arhos-gray/60 font-sans mt-4">
-            Stránka sa aktualizuje automaticky do ~60 sekúnd po publikovaní.
-          </p>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

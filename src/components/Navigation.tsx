@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 import { useLanguage } from '../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   onCloseProject?: () => void;
@@ -12,6 +13,7 @@ export function Navigation({ onCloseProject }: NavigationProps) {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initial animation
@@ -100,6 +102,13 @@ export function Navigation({ onCloseProject }: NavigationProps) {
               className="text-sm font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors relative group"
             >
               {t.nav.studio}
+              <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-arhos-terracotta transition-all duration-300 group-hover:w-full" />
+            </button>
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); navigate('/blog'); }}
+              className="text-sm font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors relative group whitespace-nowrap"
+            >
+              {t.nav.blog}
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-arhos-terracotta transition-all duration-300 group-hover:w-full" />
             </button>
             <button

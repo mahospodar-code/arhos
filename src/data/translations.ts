@@ -3,6 +3,7 @@ export const translations = {
         nav: {
             projects: 'Projekty',
             studio: 'Ateliér',
+            blog: 'Magazín',
             contact: 'Kontakt',
         },
         manifesto: {
@@ -120,6 +121,7 @@ export const translations = {
         nav: {
             projects: 'Projects',
             studio: 'Studio',
+            blog: 'Journal',
             contact: 'Contact',
         },
         manifesto: {

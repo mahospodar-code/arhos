@@ -5,20 +5,26 @@ export default async function handler(req, res) {
   }
 
   // Simple auth check - must match admin password
-  const { password, projects } = req.body;
+  const { password, type, data } = req.body;
   if (password !== 'arhos2026') {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  if (!projects) {
-    return res.status(400).json({ error: 'No projects data' });
+  if (!data || !type) {
+    return res.status(400).json({ error: 'Missing type or data' });
   }
 
   // GitHub config from Vercel environment variables
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   const REPO_OWNER = process.env.GITHUB_REPO_OWNER || 'mahospodar-code';
   const REPO_NAME = process.env.GITHUB_REPO_NAME || 'arhos';
-  const FILE_PATH = 'public/data/projects.json';
+  
+  // Support both projects and blog
+  let FILE_PATH = '';
+  if (type === 'projects') FILE_PATH = 'public/data/projects.json';
+  else if (type === 'blog') FILE_PATH = 'public/data/blog.json';
+  else return res.status(400).json({ error: 'Invalid type' });
+
   const BRANCH = 'main';
 
   if (!GITHUB_TOKEN) {
@@ -46,12 +52,12 @@ export default async function handler(req, res) {
     }
 
     // 2. Format the JSON nicely
-    const content = JSON.stringify(projects, null, 2);
+    const content = JSON.stringify(data, null, 2);
     const contentBase64 = Buffer.from(content).toString('base64');
 
     // 3. Commit the file to GitHub
     const commitBody = {
-      message: `chore: Update projects via Admin Panel [${new Date().toISOString()}]`,
+      message: `chore: Update ${type} via Admin Panel [${new Date().toISOString()}]`,
       content: contentBase64,
       branch: BRANCH,
     };

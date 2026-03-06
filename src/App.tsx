@@ -13,6 +13,8 @@ import { AdminPage } from './components/AdminPage';
 import { SEOHead } from './components/SEOHead';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { useProjects } from './hooks/useProjects';
+import { BlogSection } from './sections/BlogSection';
+import { BlogPostRoute } from './components/BlogPostRoute';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -67,8 +69,12 @@ function Home() {
           />
         </div>
 
-        <div className="relative z-50" id="approach">
+        <div className="relative z-[40]" id="approach">
           <ApproachSection />
+        </div>
+
+        <div className="relative z-[50]" id="blog">
+          <BlogSection limit={3} />
         </div>
 
         <div className="relative z-[60]" id="contact">
@@ -131,6 +137,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/project/:id" element={<ProjectPage />} />
+            <Route path="/blog" element={<><Navigation /><div className="pt-16"><BlogSection /></div><ContactSection /></>} />
+            <Route path="/blog/:slug" element={<><Navigation /><BlogPostRoute /><ContactSection /></>} />
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
 

@@ -1,0 +1,24 @@
+{
+  "sk": [
+    {
+      "id": 1,
+      "slug": "vitajte-v-arhos-atelier",
+      "title": "Vitajte v ARHOS Atelier",
+      "date": "2026-03-06",
+      "coverImage": "/images/hero_architecture.jpg",
+      "content": "Sme architektonický ateliér sídliaci na Slovensku. Toto je náš prvý blogový príspevok, v ktorom vám chceme priblížiť našu filozofiu a prístup k architektúre.\n\nNaším cieľom je vytvárať priestory, ktoré nielen dobre vyzerajú, ale v ktorých sa aj dobre žije a pracuje. Zameriavame sa na detail, trvácnosť a rovnováhu medzi estetikou a funkčnosťou.\n\nSledujte náš blog pre novinky z našich projektov, tipy pre stavanie a inšpirácie zo sveta dizajnu.",
+      "seoKeywords": "architekt, architektúra, arhos atelier, slovensko, dizajn"
+    }
+  ],
+  "en": [
+    {
+      "id": 1,
+      "slug": "welcome-to-arhos-atelier",
+      "title": "Welcome to ARHOS Atelier",
+      "date": "2026-03-06",
+      "coverImage": "/images/hero_architecture.jpg",
+      "content": "We are an architectural studio based in Slovakia. This is our first blog post, where we want to introduce our philosophy and approach to architecture.\n\nOur goal is to create spaces that not only look good but are also great to live and work in. We focus on detail, durability, and the balance between aesthetics and functionality.\n\nFollow our blog for updates on our projects, building tips, and inspiration from the world of design.",
+      "seoKeywords": "architect, architecture, arhos atelier, slovakia, design"
+    }
+  ]
+}
