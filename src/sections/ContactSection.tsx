@@ -9,7 +9,7 @@ import { useLanguage } from '../context/LanguageContext';
 gsap.registerPlugin(ScrollTrigger);
 
 // Formspree endpoint - create free account at formspree.io and replace with your form ID
-const FORMSPREE_URL = 'https://formspree.io/f/xyzgabcd'; // TODO: Replace with real Formspree form ID
+const FORMSPREE_URL = 'https://formspree.io/f/meerqgpr'; // Real Formspree form ID
 
 export function ContactSection() {
   const sectionRef = useRef<HTMLElement>(null);
