@@ -298,7 +298,9 @@ export function AdminPage() {
   const [loaded, setLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectItem | undefined>();
-  const [downloadReady, setDownloadReady] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishStatus, setPublishStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Load projects from JSON
   if (!loaded && isAuthenticated) {
@@ -327,14 +329,14 @@ export function AdminPage() {
     }
     setShowForm(false);
     setEditingProject(undefined);
-    setDownloadReady(true);
+    setHasChanges(true);
   };
 
   const handleDelete = (id: number) => {
     if (!confirm('Naozaj chcete odstrániť tento projekt?')) return;
     setSkProjects((prev) => prev.filter((p) => p.id !== id));
     setEnProjects((prev) => prev.filter((p) => p.id !== id));
-    setDownloadReady(true);
+    setHasChanges(true);
   };
 
   const handleEdit = (project: ProjectItem) => {
@@ -353,10 +355,39 @@ export function AdminPage() {
     [newEn[index], newEn[newIndex]] = [newEn[newIndex], newEn[index]];
     setSkProjects(newSk);
     setEnProjects(newEn);
-    setDownloadReady(true);
+    setHasChanges(true);
   };
 
-  // --- DOWNLOAD projects.json ---
+  // --- PUBLISH (auto-commit to GitHub) ---
+  const handlePublish = async () => {
+    setPublishing(true);
+    setPublishStatus(null);
+
+    const data: ProjectsData = { sk: skProjects, en: enProjects };
+
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: ADMIN_PASSWORD, projects: data }),
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        setPublishStatus({ type: 'success', message: result.message });
+        setHasChanges(false);
+      } else {
+        setPublishStatus({ type: 'error', message: result.error || 'Publikovanie zlyhalo' });
+      }
+    } catch {
+      setPublishStatus({ type: 'error', message: 'Chyba pripojenia k serveru.' });
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  // --- DOWNLOAD (fallback) ---
   const handleDownload = () => {
     const data: ProjectsData = { sk: skProjects, en: enProjects };
     const json = JSON.stringify(data, null, 2);
@@ -367,7 +398,6 @@ export function AdminPage() {
     a.download = 'projects.json';
     a.click();
     URL.revokeObjectURL(url);
-    setDownloadReady(false);
   };
 
   const handleLogout = () => {
@@ -388,12 +418,19 @@ export function AdminPage() {
           <a href="/" className="font-display text-lg font-bold hover:text-arhos-terracotta transition-colors">ARHOS</a>
           <span className="text-white/40 text-sm font-sans">Admin Panel</span>
         </div>
-        <div className="flex items-center gap-4">
-          {downloadReady && (
-            <button onClick={handleDownload} className="px-4 py-2 bg-green-600 text-white text-sm font-display hover:bg-green-700 transition-colors animate-pulse">
-              ⬇️ Stiahnuť projects.json
+        <div className="flex items-center gap-3">
+          {hasChanges && (
+            <button
+              onClick={handlePublish}
+              disabled={publishing}
+              className="px-5 py-2 bg-green-600 text-white text-sm font-display hover:bg-green-700 transition-colors animate-pulse disabled:animate-none disabled:opacity-60"
+            >
+              {publishing ? '⏳ Publikujem...' : '🚀 Publikovať'}
             </button>
           )}
+          <button onClick={handleDownload} className="px-3 py-2 text-white/40 text-xs font-sans hover:text-white transition-colors" title="Záložné stiahnutie">
+            ⬇️
+          </button>
           <button onClick={handleLogout} className="px-4 py-2 text-white/60 text-sm font-sans hover:text-white transition-colors">
             Odhlásiť sa
           </button>
@@ -401,6 +438,12 @@ export function AdminPage() {
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Publish Status */}
+        {publishStatus && (
+          <div className={`mb-6 p-4 text-sm font-sans ${publishStatus.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
+            {publishStatus.type === 'success' ? '✅ ' : '❌ '}{publishStatus.message}
+          </div>
+        )}
         {/* Add Button */}
         {!showForm && (
           <button
@@ -474,10 +517,11 @@ export function AdminPage() {
             <li>Kliknite na <strong>"+ Pridať nový projekt"</strong></li>
             <li>Vyplňte údaje v slovenčine → kliknite <strong>"🔄 Auto-preklad"</strong> → angličtina sa doplní sama</li>
             <li>Pridajte cesty k obrázkom</li>
-            <li>Kliknite na zelené tlačidlo <strong>"⬇️ Stiahnuť projects.json"</strong></li>
-            <li>Nahraďte súbor <code className="bg-arhos-cream px-1">public/data/projects.json</code> stiahnutým súborom</li>
-            <li>Commitnite a pushnite na GitHub — Vercel automaticky nasadí</li>
+            <li>Kliknite na zelené tlačidlo <strong>"🚀 Publikovať"</strong> — zmeny sa automaticky nasadia na web</li>
           </ol>
+          <p className="text-xs text-arhos-gray/60 font-sans mt-4">
+            Stránka sa aktualizuje automaticky do ~60 sekúnd po publikovaní.
+          </p>
         </div>
       </div>
     </div>
