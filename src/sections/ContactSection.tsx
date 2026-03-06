@@ -8,15 +8,42 @@ import { useLanguage } from '../context/LanguageContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Formspree endpoint - create free account at formspree.io and replace with your form ID
+const FORMSPREE_URL = 'https://formspree.io/f/xyzgabcd'; // TODO: Replace with real Formspree form ID
+
 export function ContactSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useLanguage();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
+    setIsLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+        (e.target as HTMLFormElement).reset();
+        setTimeout(() => setIsSubmitted(false), 5000);
+      } else {
+        setError('Odoslanie zlyhalo. Skúste to znova.');
+      }
+    } catch {
+      setError('Chyba pripojenia. Skúste to znova.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useLayoutEffect(() => {
@@ -99,6 +126,7 @@ export function ContactSection() {
               <label htmlFor="name" className="font-display text-xs text-white/60 ml-1 uppercase tracking-wider">{t.contact.form.name}</label>
               <Input
                 id="name"
+                name="name"
                 placeholder={t.contact.form.name}
                 required
                 className="bg-transparent border-white/20 text-white placeholder:text-white/30 h-10 focus:border-arhos-terracotta focus:ring-0 rounded-none transition-colors"
@@ -109,6 +137,7 @@ export function ContactSection() {
               <label htmlFor="email" className="font-display text-xs text-white/60 ml-1 uppercase tracking-wider">{t.contact.form.email}</label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="hello@example.com"
                 required
@@ -120,18 +149,22 @@ export function ContactSection() {
               <label htmlFor="message" className="font-display text-xs text-white/60 ml-1 uppercase tracking-wider">{t.contact.form.message}</label>
               <Textarea
                 id="message"
+                name="message"
                 placeholder={t.contact.form.message}
                 required
                 rows={6}
                 className="bg-transparent border-white/20 text-white placeholder:text-white/30 resize-none focus:border-arhos-terracotta focus:ring-0 rounded-none transition-colors"
               />
             </div>
+            {error && (
+              <p className="text-red-400 text-sm font-sans">{error}</p>
+            )}
             <Button
               type="submit"
-              disabled={isSubmitted}
+              disabled={isSubmitted || isLoading}
               className="w-full bg-arhos-terracotta hover:bg-arhos-terracotta/90 text-white font-display font-medium h-12 rounded-none transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] mt-2"
             >
-              {isSubmitted ? t.contact.form.sent : t.contact.form.submit}
+              {isLoading ? '...' : isSubmitted ? t.contact.form.sent : t.contact.form.submit}
             </Button>
           </form>
         </div>

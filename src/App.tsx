@@ -9,6 +9,7 @@ import { ProjectsGridSection } from './sections/ProjectsGridSection';
 import { ApproachSection } from './sections/ApproachSection';
 import { ContactSection } from './sections/ContactSection';
 import { ProjectDetail } from './components/ProjectDetail';
+import { AdminPage } from './components/AdminPage';
 import { SEOHead } from './components/SEOHead';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { translations } from './data/translations';
@@ -123,6 +124,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/project/:id" element={<ProjectPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
 
         </Router>

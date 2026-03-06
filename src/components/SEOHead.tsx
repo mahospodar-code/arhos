@@ -24,6 +24,14 @@ export function SEOHead({ title, description, image, url }: SEOHeadProps) {
             <title>{finalTitle}</title>
             <meta name="title" content={finalTitle} />
             <meta name="description" content={finalDescription} />
+            <meta name="robots" content="index, follow" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <link rel="canonical" href={finalUrl} />
+
+            {/* Hreflang for language alternatives */}
+            <link rel="alternate" hrefLang="sk" href={finalUrl} />
+            <link rel="alternate" hrefLang="en" href={finalUrl} />
+            <link rel="alternate" hrefLang="x-default" href={finalUrl} />
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="website" />
@@ -31,6 +39,9 @@ export function SEOHead({ title, description, image, url }: SEOHeadProps) {
             <meta property="og:title" content={finalTitle} />
             <meta property="og:description" content={finalDescription} />
             <meta property="og:image" content={finalImage} />
+            <meta property="og:locale" content="sk_SK" />
+            <meta property="og:locale:alternate" content="en_US" />
+            <meta property="og:site_name" content="ARHOS Atelier" />
 
             {/* Twitter */}
             <meta property="twitter:card" content="summary_large_image" />
