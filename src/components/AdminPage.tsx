@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
-import { translations } from '../data/translations';
 
 // --- Configuration ---
-const ADMIN_PASSWORD = 'arhos2026'; // Change this to your preferred password
+const ADMIN_PASSWORD = 'arhos2026';
 
 // Type for project data
 interface ProjectItem {
@@ -14,6 +13,25 @@ interface ProjectItem {
   images: string[];
   description: string;
   area: string;
+}
+
+interface ProjectsData {
+  sk: ProjectItem[];
+  en: ProjectItem[];
+}
+
+// --- Auto Translate (MyMemory API - free, no key needed) ---
+async function autoTranslate(text: string): Promise<string> {
+  if (!text.trim()) return '';
+  try {
+    const res = await fetch(
+      `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=sk|en`
+    );
+    const data = await res.json();
+    return data.responseData?.translatedText || text;
+  } catch {
+    return text; // Fallback to original if translation fails
+  }
 }
 
 // --- Password Gate ---
@@ -41,7 +59,7 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Heslo"
-          className={`w-full px-4 py-3 border ${error ? 'border-red-500 shake' : 'border-arhos-gray/30'} font-sans text-sm focus:outline-none focus:border-arhos-terracotta transition-colors`}
+          className={`w-full px-4 py-3 border ${error ? 'border-red-500' : 'border-arhos-gray/30'} font-sans text-sm focus:outline-none focus:border-arhos-terracotta transition-colors`}
           autoFocus
         />
         <button
@@ -59,19 +77,16 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
 // --- Project Form ---
 function ProjectForm({
   project,
+  enProject,
   onSave,
   onCancel,
 }: {
   project?: ProjectItem;
+  enProject?: ProjectItem;
   onSave: (sk: ProjectItem, en: ProjectItem) => void;
   onCancel: () => void;
 }) {
   const isEdit = !!project;
-
-  // Find matching EN project
-  const enProject = project
-    ? translations.en.projects.items.find((p: any) => p.id === project.id)
-    : null;
 
   const [titleSk, setTitleSk] = useState(project?.title || '');
   const [titleEn, setTitleEn] = useState(enProject?.title || '');
@@ -84,12 +99,32 @@ function ProjectForm({
   const [category, setCategory] = useState(project?.category || 'Rezidenčné');
   const [imageUrls, setImageUrls] = useState<string[]>(project?.images || []);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [translating, setTranslating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const catMap: Record<string, string> = {
     'Rezidenčné': 'Residential',
     'Interiéry': 'Interiors',
     'Komerčné': 'Commercial',
+  };
+
+  // --- AUTO TRANSLATE ---
+  const handleAutoTranslate = async () => {
+    setTranslating(true);
+    try {
+      const [tTitle, tLocation, tDesc] = await Promise.all([
+        autoTranslate(titleSk),
+        autoTranslate(locationSk),
+        autoTranslate(descSk),
+      ]);
+      setTitleEn(tTitle);
+      setLocationEn(tLocation);
+      setDescEn(tDesc);
+    } catch {
+      // silent fail, fields stay as-is
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const handleAddImageUrl = () => {
@@ -102,9 +137,7 @@ function ProjectForm({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
     Array.from(files).forEach((file) => {
-      // Create a path placeholder — user will need to place files in /public/images/
       const safeName = file.name.replace(/\s+/g, '_').toLowerCase();
       setImageUrls((prev) => [...prev, `/images/${safeName}`]);
     });
@@ -117,12 +150,8 @@ function ProjectForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nextId = isEdit
-      ? project!.id
-      : Math.max(...translations.sk.projects.items.map((p: any) => p.id), 0) + 1;
-
     const skItem: ProjectItem = {
-      id: nextId,
+      id: project?.id || 0, // Will be assigned by parent
       title: titleSk,
       category: category,
       location: locationSk,
@@ -133,7 +162,7 @@ function ProjectForm({
     };
 
     const enItem: ProjectItem = {
-      id: nextId,
+      id: project?.id || 0,
       title: titleEn || titleSk,
       category: catMap[category] || 'Residential',
       location: locationEn || locationSk,
@@ -158,8 +187,9 @@ function ProjectForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* SK Column */}
         <div className="space-y-4">
-          <p className="font-display text-sm font-bold text-arhos-black">🇸🇰 Slovensky</p>
-
+          <div className="flex items-center justify-between">
+            <p className="font-display text-sm font-bold text-arhos-black">🇸🇰 Slovensky</p>
+          </div>
           <div>
             <label className={labelClass}>Názov</label>
             <input className={inputClass} value={titleSk} onChange={(e) => setTitleSk(e.target.value)} required />
@@ -176,19 +206,28 @@ function ProjectForm({
 
         {/* EN Column */}
         <div className="space-y-4">
-          <p className="font-display text-sm font-bold text-arhos-black">🇬🇧 English</p>
-
+          <div className="flex items-center justify-between">
+            <p className="font-display text-sm font-bold text-arhos-black">🇬🇧 English</p>
+            <button
+              type="button"
+              onClick={handleAutoTranslate}
+              disabled={translating || (!titleSk && !descSk)}
+              className="px-3 py-1.5 text-xs font-display bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors disabled:opacity-40"
+            >
+              {translating ? '⏳ Prekladám...' : '🔄 Auto-preklad'}
+            </button>
+          </div>
           <div>
             <label className={labelClass}>Title</label>
-            <input className={inputClass} value={titleEn} onChange={(e) => setTitleEn(e.target.value)} placeholder="Auto-fill from SK if empty" />
+            <input className={inputClass} value={titleEn} onChange={(e) => setTitleEn(e.target.value)} placeholder="Automaticky preložené" />
           </div>
           <div>
             <label className={labelClass}>Location</label>
-            <input className={inputClass} value={locationEn} onChange={(e) => setLocationEn(e.target.value)} placeholder="Auto-fill from SK if empty" />
+            <input className={inputClass} value={locationEn} onChange={(e) => setLocationEn(e.target.value)} placeholder="Automaticky preložené" />
           </div>
           <div>
             <label className={labelClass}>Description</label>
-            <textarea className={`${inputClass} h-24 resize-none`} value={descEn} onChange={(e) => setDescEn(e.target.value)} placeholder="Auto-fill from SK if empty" />
+            <textarea className={`${inputClass} h-24 resize-none`} value={descEn} onChange={(e) => setDescEn(e.target.value)} placeholder="Automaticky preložené" />
           </div>
         </div>
       </div>
@@ -205,11 +244,7 @@ function ProjectForm({
         </div>
         <div>
           <label className={labelClass}>Kategória</label>
-          <select
-            className={inputClass}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
+          <select className={inputClass} value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="Rezidenčné">Rezidenčné</option>
             <option value="Interiéry">Interiéry</option>
             <option value="Komerčné">Komerčné</option>
@@ -220,23 +255,12 @@ function ProjectForm({
       {/* Images */}
       <div className="mt-6">
         <label className={labelClass}>Obrázky (cesty k súborom v /public/images/)</label>
-
         <div className="flex gap-2 mt-2">
-          <input
-            className={`${inputClass} flex-1`}
-            value={newImageUrl}
-            onChange={(e) => setNewImageUrl(e.target.value)}
-            placeholder="/images/project_nazov.webp"
-          />
-          <button type="button" onClick={handleAddImageUrl} className="px-4 py-2 bg-arhos-black text-white text-sm font-display hover:bg-arhos-terracotta transition-colors">
-            +
-          </button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-arhos-gray/20 text-arhos-black text-sm font-display hover:bg-arhos-gray/30 transition-colors">
-            📁
-          </button>
+          <input className={`${inputClass} flex-1`} value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="/images/projekt_nazov.webp" />
+          <button type="button" onClick={handleAddImageUrl} className="px-4 py-2 bg-arhos-black text-white text-sm font-display hover:bg-arhos-terracotta transition-colors">+</button>
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 bg-arhos-gray/20 text-arhos-black text-sm font-display hover:bg-arhos-gray/30 transition-colors">📁</button>
           <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
         </div>
-
         {imageUrls.length > 0 && (
           <div className="mt-3 space-y-1">
             {imageUrls.map((url, i) => (
@@ -263,53 +287,30 @@ function ProjectForm({
   );
 }
 
-// --- Export Helper ---
-function generateTranslationsCode(skItems: ProjectItem[], enItems: ProjectItem[]): string {
-  const formatItem = (item: ProjectItem) => {
-    const imagesStr = item.images.map((img) => `'${img}'`).join(',\n                        ');
-    return `                {
-                    id: ${item.id},
-                    title: '${item.title.replace(/'/g, "\\'")}',
-                    category: '${item.category}',
-                    location: '${item.location.replace(/'/g, "\\'")}',
-                    year: '${item.year}',
-                    images: [
-                        ${imagesStr}
-                    ],
-                    description: '${item.description.replace(/'/g, "\\'")}',
-                    area: '${item.area}',
-                },`;
-  };
-
-  const skItemsStr = skItems.map(formatItem).join('\n');
-  const enItemsStr = enItems.map(formatItem).join('\n');
-
-  return `// ===== ITEMS ARRAY (SK) =====
-// Paste this inside sk > projects > items: [...]
-${skItemsStr}
-
-// ===== ITEMS ARRAY (EN) =====
-// Paste this inside en > projects > items: [...]
-${enItemsStr}`;
-}
-
 // --- Main Admin Page ---
 export function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return sessionStorage.getItem('arhos_admin') === 'true';
   });
 
-  const [skProjects, setSkProjects] = useState<ProjectItem[]>(
-    () => [...translations.sk.projects.items] as ProjectItem[]
-  );
-  const [enProjects, setEnProjects] = useState<ProjectItem[]>(
-    () => [...translations.en.projects.items] as ProjectItem[]
-  );
-
+  const [skProjects, setSkProjects] = useState<ProjectItem[]>([]);
+  const [enProjects, setEnProjects] = useState<ProjectItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectItem | undefined>();
-  const [exportCode, setExportCode] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [downloadReady, setDownloadReady] = useState(false);
+
+  // Load projects from JSON
+  if (!loaded && isAuthenticated) {
+    fetch('/data/projects.json')
+      .then((res) => res.json())
+      .then((data: ProjectsData) => {
+        setSkProjects(data.sk);
+        setEnProjects(data.en);
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+  }
 
   if (!isAuthenticated) {
     return <PasswordGate onUnlock={() => setIsAuthenticated(true)} />;
@@ -317,22 +318,23 @@ export function AdminPage() {
 
   const handleSave = (sk: ProjectItem, en: ProjectItem) => {
     if (editingProject) {
-      // Edit
-      setSkProjects((prev) => prev.map((p) => (p.id === sk.id ? sk : p)));
-      setEnProjects((prev) => prev.map((p) => (p.id === en.id ? en : p)));
+      setSkProjects((prev) => prev.map((p) => (p.id === editingProject.id ? { ...sk, id: editingProject.id } : p)));
+      setEnProjects((prev) => prev.map((p) => (p.id === editingProject.id ? { ...en, id: editingProject.id } : p)));
     } else {
-      // Add
-      setSkProjects((prev) => [...prev, sk]);
-      setEnProjects((prev) => [...prev, en]);
+      const nextId = Math.max(...skProjects.map((p) => p.id), 0) + 1;
+      setSkProjects((prev) => [...prev, { ...sk, id: nextId }]);
+      setEnProjects((prev) => [...prev, { ...en, id: nextId }]);
     }
     setShowForm(false);
     setEditingProject(undefined);
+    setDownloadReady(true);
   };
 
   const handleDelete = (id: number) => {
     if (!confirm('Naozaj chcete odstrániť tento projekt?')) return;
     setSkProjects((prev) => prev.filter((p) => p.id !== id));
     setEnProjects((prev) => prev.filter((p) => p.id !== id));
+    setDownloadReady(true);
   };
 
   const handleEdit = (project: ProjectItem) => {
@@ -340,17 +342,32 @@ export function AdminPage() {
     setShowForm(true);
   };
 
-  const handleExport = () => {
-    const code = generateTranslationsCode(skProjects, enProjects);
-    setExportCode(code);
+  // --- REORDER PROJECTS ---
+  const moveProject = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= skProjects.length) return;
+
+    const newSk = [...skProjects];
+    const newEn = [...enProjects];
+    [newSk[index], newSk[newIndex]] = [newSk[newIndex], newSk[index]];
+    [newEn[index], newEn[newIndex]] = [newEn[newIndex], newEn[index]];
+    setSkProjects(newSk);
+    setEnProjects(newEn);
+    setDownloadReady(true);
   };
 
-  const handleCopy = () => {
-    if (exportCode) {
-      navigator.clipboard.writeText(exportCode);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+  // --- DOWNLOAD projects.json ---
+  const handleDownload = () => {
+    const data: ProjectsData = { sk: skProjects, en: enProjects };
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'projects.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    setDownloadReady(false);
   };
 
   const handleLogout = () => {
@@ -358,57 +375,32 @@ export function AdminPage() {
     setIsAuthenticated(false);
   };
 
+  // Find EN project for editing
+  const editingEnProject = editingProject
+    ? enProjects.find((p) => p.id === editingProject.id)
+    : undefined;
+
   return (
     <div className="min-h-screen bg-arhos-cream">
       {/* Header */}
       <header className="bg-arhos-black text-white px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <a href="/" className="font-display text-lg font-bold hover:text-arhos-terracotta transition-colors">
-            ARHOS
-          </a>
+          <a href="/" className="font-display text-lg font-bold hover:text-arhos-terracotta transition-colors">ARHOS</a>
           <span className="text-white/40 text-sm font-sans">Admin Panel</span>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 bg-arhos-terracotta text-white text-sm font-display hover:bg-arhos-terracotta/80 transition-colors"
-          >
-            📤 Exportovať kód
-          </button>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-white/60 text-sm font-sans hover:text-white transition-colors"
-          >
+          {downloadReady && (
+            <button onClick={handleDownload} className="px-4 py-2 bg-green-600 text-white text-sm font-display hover:bg-green-700 transition-colors animate-pulse">
+              ⬇️ Stiahnuť projects.json
+            </button>
+          )}
+          <button onClick={handleLogout} className="px-4 py-2 text-white/60 text-sm font-sans hover:text-white transition-colors">
             Odhlásiť sa
           </button>
         </div>
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* Export Modal */}
-        {exportCode && (
-          <div className="mb-8 bg-white p-6 shadow-lg border-l-4 border-arhos-terracotta">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-arhos-black">Exportovaný kód</h3>
-              <div className="flex gap-2">
-                <button onClick={handleCopy} className="px-4 py-2 bg-arhos-black text-white text-sm font-display hover:bg-arhos-terracotta transition-colors">
-                  {copied ? '✓ Skopírované!' : '📋 Kopírovať'}
-                </button>
-                <button onClick={() => setExportCode(null)} className="px-4 py-2 text-arhos-gray text-sm font-sans hover:text-arhos-black transition-colors">
-                  Zavrieť
-                </button>
-              </div>
-            </div>
-            <p className="text-sm text-arhos-gray font-sans mb-3">
-              Skopírujte tento kód a vložte ho do <code className="bg-arhos-cream px-1">src/data/translations.ts</code>.
-              Nahraďte existujúci obsah <code className="bg-arhos-cream px-1">items: [...]</code> v oboch sekciách (SK aj EN).
-            </p>
-            <pre className="bg-arhos-black text-green-400 p-4 text-xs font-mono overflow-x-auto max-h-64 overflow-y-auto">
-              {exportCode}
-            </pre>
-          </div>
-        )}
-
         {/* Add Button */}
         {!showForm && (
           <button
@@ -424,6 +416,7 @@ export function AdminPage() {
           <div className="mb-8">
             <ProjectForm
               project={editingProject}
+              enProject={editingEnProject}
               onSave={handleSave}
               onCancel={() => { setShowForm(false); setEditingProject(undefined); }}
             />
@@ -435,36 +428,37 @@ export function AdminPage() {
           <h2 className="font-display text-lg font-bold text-arhos-black">
             Projekty ({skProjects.length})
           </h2>
-
-          {skProjects.map((project) => (
+          {skProjects.map((project, index) => (
             <div key={project.id} className="bg-white p-4 shadow-sm flex items-center gap-4 group hover:shadow-md transition-shadow">
-              {/* Thumbnail */}
-              <div className="w-20 h-16 bg-arhos-cream overflow-hidden flex-shrink-0">
-                {project.images[0] && (
-                  <img src={project.images[0]} alt="" className="w-full h-full object-cover" />
-                )}
+              {/* Reorder Buttons */}
+              <div className="flex flex-col gap-0.5">
+                <button
+                  onClick={() => moveProject(index, 'up')}
+                  disabled={index === 0}
+                  className="px-1.5 py-0.5 text-xs text-arhos-gray hover:text-arhos-black hover:bg-arhos-cream transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                  title="Posunúť hore"
+                >▲</button>
+                <button
+                  onClick={() => moveProject(index, 'down')}
+                  disabled={index === skProjects.length - 1}
+                  className="px-1.5 py-0.5 text-xs text-arhos-gray hover:text-arhos-black hover:bg-arhos-cream transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+                  title="Posunúť dole"
+                >▼</button>
               </div>
-
-              {/* Info */}
+              <div className="w-20 h-16 bg-arhos-cream overflow-hidden flex-shrink-0">
+                {project.images[0] && <img src={project.images[0]} alt="" className="w-full h-full object-cover" />}
+              </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-display font-bold text-arhos-black truncate">{project.title}</h3>
                 <p className="text-sm text-arhos-gray font-sans truncate">
                   {project.category} · {project.location} · {project.year} · {project.images.length} fotiek
                 </p>
               </div>
-
-              {/* Actions */}
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                  onClick={() => handleEdit(project)}
-                  className="px-3 py-1.5 text-sm font-display text-arhos-black bg-arhos-cream hover:bg-arhos-terracotta hover:text-white transition-colors"
-                >
+                <button onClick={() => handleEdit(project)} className="px-3 py-1.5 text-sm font-display text-arhos-black bg-arhos-cream hover:bg-arhos-terracotta hover:text-white transition-colors">
                   ✏️ Upraviť
                 </button>
-                <button
-                  onClick={() => handleDelete(project.id)}
-                  className="px-3 py-1.5 text-sm font-display text-red-600 bg-red-50 hover:bg-red-500 hover:text-white transition-colors"
-                >
+                <button onClick={() => handleDelete(project.id)} className="px-3 py-1.5 text-sm font-display text-red-600 bg-red-50 hover:bg-red-500 hover:text-white transition-colors">
                   🗑️ Zmazať
                 </button>
               </div>
@@ -477,12 +471,12 @@ export function AdminPage() {
           <h3 className="font-display font-bold text-arhos-black mb-3">📖 Ako pridať projekt</h3>
           <ol className="list-decimal list-inside text-sm text-arhos-gray font-sans space-y-2">
             <li>Nahrajte fotky projektu do priečinka <code className="bg-arhos-cream px-1">public/images/</code> vo formáte WebP</li>
-            <li>Kliknite na <strong>"+ Pridať nový projekt"</strong> vyššie</li>
-            <li>Vyplňte údaje v slovenčine a angličtine</li>
-            <li>Pridajte cesty k obrázkom (napr. <code className="bg-arhos-cream px-1">/images/projekt_nazov.webp</code>)</li>
-            <li>Kliknite na <strong>"Exportovať kód"</strong> a skopírujte ho</li>
-            <li>Vložte kód do súboru <code className="bg-arhos-cream px-1">src/data/translations.ts</code></li>
-            <li>Commitnite zmeny a pushnite na GitHub — Vercel automaticky nasadí</li>
+            <li>Kliknite na <strong>"+ Pridať nový projekt"</strong></li>
+            <li>Vyplňte údaje v slovenčine → kliknite <strong>"🔄 Auto-preklad"</strong> → angličtina sa doplní sama</li>
+            <li>Pridajte cesty k obrázkom</li>
+            <li>Kliknite na zelené tlačidlo <strong>"⬇️ Stiahnuť projects.json"</strong></li>
+            <li>Nahraďte súbor <code className="bg-arhos-cream px-1">public/data/projects.json</code> stiahnutým súborom</li>
+            <li>Commitnite a pushnite na GitHub — Vercel automaticky nasadí</li>
           </ol>
         </div>
       </div>

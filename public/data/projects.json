@@ -1,0 +1,132 @@
+{
+  "sk": [
+    {
+      "id": 1,
+      "title": "Vila v Bratislave",
+      "category": "Rezidenčné",
+      "location": "Bratislava, Slovensko",
+      "year": "2023",
+      "images": [
+        "/images/project_vila_bratislava.jpg",
+        "/images/project_vila_bratislava.jpg",
+        "/images/project_vila_bratislava.jpg",
+        "/images/project_vila_bratislava.jpg",
+        "/images/project_vila_bratislava.jpg"
+      ],
+      "description": "Moderná mestská vila zasadená do svahovitého terénu s výhľadom na panorámu mesta. Dôraz na súkromie a prepojenie s exteriérom.",
+      "area": "280 m²"
+    },
+    {
+      "id": 2,
+      "title": "Interiér Apartmánu",
+      "category": "Interiéry",
+      "location": "Praha, Česká republika",
+      "year": "2022",
+      "images": ["/images/project_interior_praha.jpg"],
+      "description": "Minimalistický interiér v historickom centre, ktorý rešpektuje pôvodné prvky a dopĺňa ich o súčasný dizajn.",
+      "area": "120 m²"
+    },
+    {
+      "id": 3,
+      "title": "Kancelárie Ostrava",
+      "category": "Komerčné",
+      "location": "Ostrava, Česká republika",
+      "year": "2023",
+      "images": ["/images/project_kancelare_ostrava.jpg"],
+      "description": "Flexibilné pracovné prostredie pre technologickú firmu s dôrazom na akustiku a svetelný komfort.",
+      "area": "850 m²"
+    },
+    {
+      "id": 4,
+      "title": "Rekonštrukcia Vily",
+      "category": "Rezidenčné",
+      "location": "Liberec, Česká republika",
+      "year": "2021",
+      "images": ["/images/project_rekonstrukce_liberec.jpg"],
+      "description": "Citlivá obnova medzivojnovej vily so zachovaním genia loci a adaptáciou pre potreby súčasnej rodiny.",
+      "area": "320 m²"
+    },
+    {
+      "id": 5,
+      "title": "Rodinný Dom Brno",
+      "category": "Rezidenčné",
+      "location": "Brno, Česká republika",
+      "year": "2022",
+      "images": ["/images/project_rodinny_dum_brno.jpg"],
+      "description": "Kompaktný rodinný dom na úzkom pozemku, ktorý maximálne využíva priestor a prirodzené svetlo.",
+      "area": "190 m²"
+    },
+    {
+      "id": 6,
+      "title": "Rodinný Dom Plzeň",
+      "category": "Rezidenčné",
+      "location": "Plzeň, Česká republika",
+      "year": "2023",
+      "images": ["/images/project_rodinny_dum_plzen.jpg"],
+      "description": "Energeticky pasívny dom s použitím prírodných materiálov a zelenou strechou.",
+      "area": "210 m²"
+    }
+  ],
+  "en": [
+    {
+      "id": 1,
+      "title": "Villa in Bratislava",
+      "category": "Residential",
+      "location": "Bratislava, Slovakia",
+      "year": "2023",
+      "images": ["/images/project_vila_bratislava.jpg"],
+      "description": "Modern urban villa set in sloping terrain with views of the city skyline. Emphasis on privacy and connection with the exterior.",
+      "area": "280 m²"
+    },
+    {
+      "id": 2,
+      "title": "Apartment Interior",
+      "category": "Interiors",
+      "location": "Prague, Czech Republic",
+      "year": "2022",
+      "images": ["/images/project_interior_praha.jpg"],
+      "description": "Minimalist interior in the historic center, respecting original elements while complementing them with contemporary design.",
+      "area": "120 m²"
+    },
+    {
+      "id": 3,
+      "title": "Ostrava Offices",
+      "category": "Commercial",
+      "location": "Ostrava, Czech Republic",
+      "year": "2023",
+      "images": ["/images/project_kancelare_ostrava.jpg"],
+      "description": "Flexible working environment for a tech company with a focus on acoustics and lighting comfort.",
+      "area": "850 m²"
+    },
+    {
+      "id": 4,
+      "title": "Villa Renovation",
+      "category": "Residential",
+      "location": "Liberec, Czech Republic",
+      "year": "2021",
+      "images": ["/images/project_rekonstrukce_liberec.jpg"],
+      "description": "Sensitive renovation of an interwar villa preserving the genius loci and adapting it for the needs of a contemporary family.",
+      "area": "320 m²"
+    },
+    {
+      "id": 5,
+      "title": "Family House Brno",
+      "category": "Residential",
+      "location": "Brno, Czech Republic",
+      "year": "2022",
+      "images": ["/images/project_rodinny_dum_brno.jpg"],
+      "description": "Compact family house on a narrow plot, maximizing space and natural light.",
+      "area": "190 m²"
+    },
+    {
+      "id": 6,
+      "title": "Family House Plzeň",
+      "category": "Residential",
+      "location": "Plzeň, Czech Republic",
+      "year": "2023",
+      "images": ["/images/project_rodinny_dum_plzen.jpg"],
+      "description": "Energy-passive house using natural materials and a green roof.",
+      "area": "210 m²"
+    }
+  ]
+}

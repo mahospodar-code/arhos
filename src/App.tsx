@@ -12,7 +12,7 @@ import { ProjectDetail } from './components/ProjectDetail';
 import { AdminPage } from './components/AdminPage';
 import { SEOHead } from './components/SEOHead';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
-import { translations } from './data/translations';
+import { useProjects } from './hooks/useProjects';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,6 +29,11 @@ function ScrollToTop() {
 function Home() {
   const mainRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const { projects } = useProjects();
+
+  // Get projects for current language
+  const projectItems = language === 'en' ? projects.en : projects.sk;
 
   useEffect(() => {
     // Refresh ScrollTrigger when returning to Home
@@ -58,6 +63,7 @@ function Home() {
           <ProjectsGridSection
             selectedProject={null}
             setSelectedProject={handleProjectClick}
+            projectItems={projectItems}
           />
         </div>
 
@@ -78,10 +84,11 @@ function ProjectPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { language } = useLanguage();
+  const { projects } = useProjects();
 
-  // Find project data based on ID and Language
-  const t = translations[language];
-  const project = t.projects.items.find((p: any) => p.id === Number(id));
+  // Find project data based on ID and Language (from JSON)
+  const projectItems = language === 'en' ? projects.en : projects.sk;
+  const project = projectItems.find((p: any) => p.id === Number(id));
 
   if (!project) {
     return (

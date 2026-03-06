@@ -10,9 +10,10 @@ import { useLanguage } from '../context/LanguageContext';
 interface ProjectsGridSectionProps {
   selectedProject?: any;
   setSelectedProject?: (project: any) => void;
+  projectItems?: any[];
 }
 
-export function ProjectsGridSection({ selectedProject, setSelectedProject }: ProjectsGridSectionProps) {
+export function ProjectsGridSection({ selectedProject, setSelectedProject, projectItems }: ProjectsGridSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -20,8 +21,8 @@ export function ProjectsGridSection({ selectedProject, setSelectedProject }: Pro
   // const [selectedProject, setSelectedProject] = useState<any>(null); // MOVED TO APP.TSX
   const { t } = useLanguage();
 
-  // Projects and filters are now fully driven by translations.ts
-  const currentProjects = t.projects.items;
+  // Use provided projectItems or fall back to translations
+  const currentProjects = projectItems || t.projects.items;
 
   // Map filters from translation object
   const filters = [
