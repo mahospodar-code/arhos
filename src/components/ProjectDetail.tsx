@@ -23,37 +23,6 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [imageOrientations, setImageOrientations] = useState<Record<number, 'landscape' | 'portrait'>>({});
-
-    // Load image dimensions to determine orientation
-    useEffect(() => {
-        const orientations: Record<number, 'landscape' | 'portrait'> = {};
-        let loadedCount = 0;
-        const imagesToLoad = project.images.slice(1); // skip cover
-
-        if (imagesToLoad.length === 0) return;
-
-        imagesToLoad.forEach((src, idx) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = () => {
-                // If width > height, it's landscape. Otherwise portrait.
-                orientations[idx] = img.width > img.height ? 'landscape' : 'portrait';
-                loadedCount++;
-                if (loadedCount === imagesToLoad.length) {
-                    setImageOrientations(orientations);
-                }
-            };
-            img.onerror = () => {
-                // Default to landscape on error
-                orientations[idx] = 'landscape';
-                loadedCount++;
-                if (loadedCount === imagesToLoad.length) {
-                    setImageOrientations(orientations);
-                }
-            }
-        });
-    }, [project.images]);
 
     // Keyboard navigation & ESC
     useEffect(() => {
@@ -90,7 +59,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         return () => ctx.revert();
     }, []);
 
-    // The grid class is now determined dynamically inside the render loop based on the loaded orientations
+    // Removed getGridClass to allow natural sizes
 
     // Scroll Reveal Hook (Simple Intersection Observer)
     const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
@@ -171,44 +140,18 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </div>
                 </div>
 
-                {/* --- Main Content (Dynamic Grid) --- */}
-                {/* 
-                    Logic: 
-                    - We use a 12-column grid.
-                    - Landscape images try to take full width (col-span-12) or sometimes half if there are many.
-                    - Portrait images take half width (col-span-6).
-                    - We group them to ensure we don't have broken rows.
-                */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 lg:gap-24 w-full max-w-[1600px] mx-auto mt-10 md:mt-20">
+                {/* --- Main Content (Natural Flow Gallery) --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto items-start">
                     {project.images.slice(1).map((img, idx) => {
-                        const originalIndex = idx + 1;
-                        const orientation = imageOrientations[idx] || 'landscape'; // default before loading
-                        
-                        // Default fallback sizing
-                        let gridClass = "md:col-span-12"; 
-                        let imgClass = "object-contain"; // preserve aspect ratio
-                        let containerClass = "w-full";
-
-                        if (orientation === 'portrait') {
-                            gridClass = "md:col-span-6";
-                            // Give portrait images a specific max height so they don't become massive
-                            containerClass = "w-full max-h-[80vh] flex justify-center";
-                        } else {
-                            gridClass = "md:col-span-12";
-                            containerClass = "w-full max-h-[90vh] flex justify-center";
-                        }
-
-                        // If we have two portraits next to each other, they naturally sit side-by-side in col-span-6
-                        // If we have a landscape, it breaks to a new line and takes full width.
-
+                        const originalIndex = idx + 1; // Map back to original index
                         return (
-                            <div key={originalIndex} className={`${gridClass} flex items-center justify-center`}>
-                                <RevealOnScroll className="w-full h-full flex justify-center">
-                                    <div className={`${containerClass} relative group overflow-hidden bg-arhos-black/5`}>
+                            <div key={originalIndex} className="w-full h-auto">
+                                <RevealOnScroll className="w-full">
+                                    <div className="w-full relative group bg-arhos-black/5">
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className={`w-full h-full ${imgClass} hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
+                                            className="w-full h-auto object-contain transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                         />
