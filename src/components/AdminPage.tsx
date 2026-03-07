@@ -104,6 +104,7 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
   const [newImageUrl, setNewImageUrl] = useState('');
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [translating, setTranslating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const catMap: Record<string, string> = { 'Rezidenčné': 'Residential', 'Interiéry': 'Interiors', 'Komerčné': 'Commercial' };
@@ -116,10 +117,47 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
     } finally { setTranslating(false); }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const newImgs = Array.from(e.target.files).map(f => `/images/${f.name.replace(/\s+/g, '_').toLowerCase()}`);
-    setImageUrls([...imageUrls, ...newImgs]);
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    
+    if (!cloudName || !uploadPreset) {
+      alert('Cloudinary konfigurácia chýba! Pokračujem s lokálnymi cestami. (Pridajte VITE_CLOUDINARY_CLOUD_NAME a VITE_CLOUDINARY_UPLOAD_PRESET premenné)');
+      const newImgs = Array.from(e.target.files).map(f => `/images/${f.name.replace(/\s+/g, '_').toLowerCase()}`);
+      setImageUrls([...imageUrls, ...newImgs]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setUploading(true);
+    const files = Array.from(e.target.files);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
+        }
+      }
+      setImageUrls(prev => [...prev, ...uploadedUrls]);
+    } catch (err) {
+      console.error('Upload failed', err);
+      alert('Nahrávanie zlyhalo. Skontrolujte internet alebo nastavenie Cloudinary.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -163,8 +201,10 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
         <div className="flex gap-2 mb-4">
           <input className={inputClass} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="/images/foto.webp" />
           <button type="button" onClick={() => { if(newImageUrl) setImageUrls([...imageUrls, newImageUrl]); setNewImageUrl(''); }} className="px-4 bg-arhos-black text-white hover:bg-arhos-terracotta transition-colors">+</button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 bg-gray-100 hover:bg-gray-200 transition-colors" title="Vybrať z disku (len načíta názov)">📁</button>
-          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
+          <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50" title="Vybrať z disku a nahrať">
+            {uploading ? '⏳ Nahrávam...' : '📁 Nahrať fotky'}
+          </button>
+          <input ref={fileInputRef} type="file" multiple className="hidden" accept="image/*" onChange={handleFileSelect} />
         </div>
         <div className="flex flex-wrap gap-3 mt-4">
           {imageUrls.map((url, idx) => (
@@ -238,6 +278,42 @@ function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?
   const [seoKeywordsSk, setSeoKeywordsSk] = useState(post?.seoKeywords || '');
   const [seoKeywordsEn, setSeoKeywordsEn] = useState(enPost?.seoKeywords || '');
   const [translating, setTranslating] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    
+    if (!cloudName || !uploadPreset) {
+      alert('Cloudinary konfigurácia chýba! Pridajte premenné.');
+      setCoverImage(`/images/${e.target.files[0].name.replace(/\s+/g, '_').toLowerCase()}`);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', e.target.files[0]);
+      formData.append('upload_preset', uploadPreset);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.secure_url) {
+        setCoverImage(data.secure_url);
+      }
+    } catch (err) {
+      alert("Chyba pri nahrávaní obrázku.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const handleAutoTranslate = async () => {
     setTranslating(true);
@@ -283,7 +359,16 @@ function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?
       </div>
       <div className="grid grid-cols-2 gap-4 mt-6">
         <div><label className={labelClass}>Dátum</label><input type="date" className={inputClass} value={date} onChange={e => setDate(e.target.value)} required /></div>
-        <div><label className={labelClass}>Titulný obrázok (/images/...)</label><input className={inputClass} value={coverImage} onChange={e => setCoverImage(e.target.value)} required placeholder="/images/blog_cover.jpg" /></div>
+        <div>
+          <label className={labelClass}>Titulný obrázok (URL alebo nahrať cez tlačidlo)</label>
+          <div className="flex gap-2">
+            <input className={inputClass} value={coverImage} onChange={e => setCoverImage(e.target.value)} required placeholder="/images/blog_cover.jpg" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="px-4 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50 inline-flex items-center min-w-max">
+              {uploading ? '⏳...' : '📁 Nahrať'}
+            </button>
+            <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handleFileSelect} />
+          </div>
+        </div>
       </div>
       <div className="flex gap-3 mt-8">
         <button type="submit" className="flex-1 bg-blue-600 text-white py-3">Uložiť článok</button>
