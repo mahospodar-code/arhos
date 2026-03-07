@@ -176,20 +176,29 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-10 lg:gap-16 w-full max-w-6xl mx-auto">
                     {project.images.slice(1).map((img, idx) => {
                         const isLandscape = aspectRatios[img] !== 'portrait'; // default to landscape if not loaded yet
+                        
                         const gridClass = isLandscape 
                             ? "md:col-span-12 flex" 
                             : "md:col-span-6 aspect-[4/5] md:aspect-[3/4]";
                             
+                        const containerClass = `w-full relative group overflow-hidden bg-arhos-black/5 ${
+                            isLandscape ? 'h-auto flex items-center justify-center' : 'h-full'
+                        }`;
+                        
+                        const imgClass = `w-full ${
+                            isLandscape ? 'h-auto' : 'h-full'
+                        } object-cover hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`;
+
                         const originalIndex = idx + 1; // Map back to original array index for lightbox
                         
                         return (
-                            <div key={originalIndex} className={`${gridClass}`}>
+                            <div key={originalIndex} className={gridClass}>
                                 <RevealOnScroll className="w-full h-full flex">
-                                    <div className={`w-full relative group overflow-hidden bg-arhos-black/5 ${isLandscape ? 'h-auto flex items-center justify-center' : 'h-full'}`}>
+                                    <div className={containerClass}>
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className={`w-full ${isLandscape ? 'h-auto' : 'h-full'} object-cover hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
+                                            className={imgClass}
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                         />
