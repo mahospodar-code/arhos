@@ -154,11 +154,11 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     {project.images.length === 1 && (
                         <div className="md:col-span-2 w-full transition-all duration-500">
                             <RevealOnScroll className="w-full">
-                                <div className="w-full relative group bg-arhos-black/5 flex">
+                                <div className="w-full relative group bg-arhos-black/5 block">
                                     <img
                                         src={project.images[0]}
                                         alt={`${project.title} - view 1`}
-                                        className="w-full h-auto object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                        className="w-full h-auto block object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
                                         loading="eager"
                                         onClick={() => setExpandedImageIndex(0)}
                                     />
@@ -179,12 +179,12 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                         return (
                             <div key={originalIndex} className={`${spanClass} w-full transition-all duration-500`}>
                                 <RevealOnScroll className="w-full">
-                                    <div className="w-full relative group bg-arhos-black/5 flex">
+                                    <div className="w-full relative group bg-arhos-black/5 block">
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
                                             // Provide unconstrained height inside the grid so rows adapt to content heights natively
-                                            className="w-full h-auto object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            className="w-full h-auto block object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                             onLoad={(e) => handleImageLoad(originalIndex, e)}
