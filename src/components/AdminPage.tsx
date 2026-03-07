@@ -102,6 +102,7 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
   const [category, setCategory] = useState(project?.category || 'Rezidenčné');
   const [imageUrls, setImageUrls] = useState<string[]>(project?.images || []);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [translating, setTranslating] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -119,28 +120,6 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
     if (!e.target.files) return;
     const newImgs = Array.from(e.target.files).map(f => `/images/${f.name.replace(/\s+/g, '_').toLowerCase()}`);
     setImageUrls([...imageUrls, ...newImgs]);
-  };
-
-  const moveImage = (index: number, direction: 'up' | 'down') => {
-    const ni = direction === 'up' ? index - 1 : index + 1;
-    if (ni < 0 || ni >= imageUrls.length) return;
-    const newImgs = [...imageUrls];
-    [newImgs[index], newImgs[ni]] = [newImgs[ni], newImgs[index]];
-    setImageUrls(newImgs);
-  };
-
-  const setAsCover = (index: number) => {
-    if (index === 0) return;
-    const newImgs = [...imageUrls];
-    const [cover] = newImgs.splice(index, 1);
-    newImgs.unshift(cover);
-    setImageUrls(newImgs);
-  };
-
-  const updateImageUrl = (index: number, newUrl: string) => {
-    const newImgs = [...imageUrls];
-    newImgs[index] = newUrl;
-    setImageUrls(newImgs);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -180,33 +159,62 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
         <div><label className={labelClass}>Kategória</label><select className={inputClass} value={category} onChange={e => setCategory(e.target.value)}><option>Rezidenčné</option><option>Interiéry</option><option>Komerčné</option></select></div>
       </div>
       <div className="mt-6 border-t border-arhos-gray/10 pt-6">
-        <label className={labelClass}>Obrázky (prvá fotka je titulná)</label>
+        <label className={labelClass}>Obrázky (chyťte a posuňte pre zmenu poradia, prvá fotka je titulná)</label>
         <div className="flex gap-2 mb-4">
           <input className={inputClass} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="/images/foto.webp" />
           <button type="button" onClick={() => { if(newImageUrl) setImageUrls([...imageUrls, newImageUrl]); setNewImageUrl(''); }} className="px-4 bg-arhos-black text-white hover:bg-arhos-terracotta transition-colors">+</button>
           <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 bg-gray-100 hover:bg-gray-200 transition-colors" title="Vybrať z disku (len načíta názov)">📁</button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
         </div>
-        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+        <div className="flex flex-wrap gap-3 mt-4">
           {imageUrls.map((url, idx) => (
-            <div key={idx} className={`flex items-center gap-3 p-2 border transition-colors ${idx === 0 ? 'border-arhos-terracotta bg-orange-50/20' : 'border-arhos-gray/20 bg-gray-50'}`}>
-              <div className="w-16 h-12 bg-arhos-cream flex-shrink-0 relative">
-                <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" />
-                {idx === 0 && <span className="absolute -top-2 -right-2 text-xl" title="Titulná fotka">⭐</span>}
-              </div>
-              <div className="flex-1">
-                <input 
-                  value={url} 
-                  onChange={(e) => updateImageUrl(idx, e.target.value)}
-                  className="w-full text-xs font-sans bg-transparent border-b border-transparent hover:border-arhos-gray/30 focus:border-arhos-terracotta focus:outline-none py-1"
+            <div 
+              key={`${url}-${idx}`} 
+              draggable
+              onDragStart={(e) => {
+                setDraggedIdx(idx);
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', idx.toString());
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (draggedIdx === null || draggedIdx === idx) return;
+                const newImgs = [...imageUrls];
+                const item = newImgs.splice(draggedIdx, 1)[0];
+                newImgs.splice(idx, 0, item);
+                setImageUrls(newImgs);
+                setDraggedIdx(idx);
+              }}
+              onDragEnd={() => setDraggedIdx(null)}
+              className={`relative group w-28 h-28 bg-arhos-cream border-2 cursor-move transition-all ${draggedIdx === idx ? 'opacity-40 scale-95' : 'opacity-100 hover:scale-105 hover:shadow-lg'} ${idx === 0 ? 'border-arhos-terracotta' : 'border-transparent'}`}
+            >
+              <div className="w-full h-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                <img 
+                  src={url} 
+                  alt={`img-${idx}`} 
+                  className="w-full h-full object-cover pointer-events-none" 
+                  onError={(e) => { 
+                    e.currentTarget.style.display = 'none'; 
+                    e.currentTarget.parentElement?.querySelector('.fallback-text')?.classList.remove('hidden'); 
+                  }} 
                 />
+                <span className="fallback-text hidden text-[10px] text-gray-500 text-center px-1 break-all w-full leading-tight">
+                  {url.split('/').pop()}
+                </span>
               </div>
-              <div className="flex gap-1 items-center">
-                <button type="button" onClick={() => moveImage(idx, 'up')} disabled={idx === 0} className="p-1 px-2 text-xs text-arhos-gray hover:bg-white disabled:opacity-30">▲</button>
-                <button type="button" onClick={() => moveImage(idx, 'down')} disabled={idx === imageUrls.length - 1} className="p-1 px-2 text-xs text-arhos-gray hover:bg-white disabled:opacity-30">▼</button>
-                {idx !== 0 && <button type="button" onClick={() => setAsCover(idx)} className="p-1 px-2 text-xs text-arhos-terracotta hover:bg-orange-100 transition-colors bg-white border border-arhos-terracotta/20 rounded" title="Nastaviť ako titulku">⭐ Titulná</button>}
-                <button type="button" onClick={() => setImageUrls(imageUrls.filter((_,i)=>i!==idx))} className="p-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 ml-2">✕</button>
+              
+              <div className="absolute inset-x-0 bottom-0 bg-black/70 text-white text-[10px] p-1 truncate text-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {url.split('/').pop()}
               </div>
+              
+              {idx === 0 && <span className="absolute -top-3 -left-3 text-lg filter drop-shadow bg-white rounded-full w-6 h-6 flex items-center justify-center pointer-events-none shadow" title="Titulná fotka">⭐</span>}
+              
+              <button 
+                type="button" 
+                onClick={(e) => { e.stopPropagation(); setImageUrls(imageUrls.filter((_,i)=>i!==idx)); }} 
+                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600 z-10"
+              >✕</button>
             </div>
           ))}
         </div>
