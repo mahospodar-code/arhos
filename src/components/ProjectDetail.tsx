@@ -173,7 +173,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 </div>
 
                 {/* --- Main Content (Smart Grid) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-4 w-full max-w-[1920px] mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-10 lg:gap-16 w-full max-w-6xl mx-auto">
                     {project.images.slice(1).map((img, idx) => {
                         const isLandscape = aspectRatios[img] !== 'portrait'; // default to landscape if not loaded yet
                         const gridClass = isLandscape 
