@@ -151,7 +151,23 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
                 {/* --- Main Content (Smart Aspect Ratio Grid) --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto auto-rows-max items-start">
-                    {project.images.slice(1).map((img, idx) => {
+                    {project.images.length === 1 && (
+                        <div className="md:col-span-2 w-full transition-all duration-500">
+                            <RevealOnScroll className="w-full">
+                                <div className="w-full relative group bg-arhos-black/5 flex">
+                                    <img
+                                        src={project.images[0]}
+                                        alt={`${project.title} - view 1`}
+                                        className="w-full h-auto object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                        loading="eager"
+                                        onClick={() => setExpandedImageIndex(0)}
+                                    />
+                                </div>
+                            </RevealOnScroll>
+                        </div>
+                    )}
+                    
+                    {project.images.length > 1 && project.images.slice(1).map((img, idx) => {
                         const originalIndex = idx + 1;
                         const ratio = aspectRatios[originalIndex];
                         
@@ -161,14 +177,14 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                         const spanClass = isLandscape ? "md:col-span-2" : "md:col-span-1";
                         
                         return (
-                            <div key={originalIndex} className={`${spanClass} w-full h-full transition-all duration-500`}>
-                                <RevealOnScroll className="w-full h-full">
-                                    <div className="w-full h-full relative group bg-arhos-black/5 flex">
+                            <div key={originalIndex} className={`${spanClass} w-full transition-all duration-500`}>
+                                <RevealOnScroll className="w-full">
+                                    <div className="w-full relative group bg-arhos-black/5 flex">
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            // Provide unconstrained height inside the grid so rows adapt to content heights
-                                            className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in min-h-[300px]"
+                                            // Provide unconstrained height inside the grid so rows adapt to content heights natively
+                                            className="w-full h-auto object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                             onLoad={(e) => handleImageLoad(originalIndex, e)}
