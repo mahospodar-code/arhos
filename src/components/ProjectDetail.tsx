@@ -23,6 +23,15 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
+
+    const handleImageLoad = (index: number, e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const target = e.target as HTMLImageElement;
+        setAspectRatios(prev => ({
+            ...prev,
+            [index]: target.naturalWidth / target.naturalHeight
+        }));
+    };
 
     // Keyboard navigation & ESC
     useEffect(() => {
@@ -59,19 +68,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         return () => ctx.revert();
     }, []);
 
-    // Helper for grid classes based on index
-    const getGridClass = (index: number) => {
-        // Pattern: 1 - 2 - 1 - 2
-        const i = index % 3;
 
-        if (i === 0) {
-            // Full width
-            return "md:col-span-12 aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9]";
-        } else {
-            // Half width
-            return "md:col-span-6 aspect-[4/3] md:aspect-[3/2]";
-        }
-    };
 
     // Scroll Reveal Hook (Simple Intersection Observer)
     const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
@@ -152,21 +149,29 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </div>
                 </div>
 
-                {/* --- Main Content (Smart Grid) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-4 w-full max-w-[1920px] mx-auto">
+                {/* --- Main Content (Smart Aspect Ratio Grid) --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto auto-rows-max items-start">
                     {project.images.slice(1).map((img, idx) => {
-                        const gridClass = getGridClass(idx);
-                        const originalIndex = idx + 1; // Map back to the original array index for the expanded view
+                        const originalIndex = idx + 1;
+                        const ratio = aspectRatios[originalIndex];
+                        
+                        // Default to col-span-1, but once loaded, if it's landscape (ratio > 1.1), span both columns
+                        // This prevents heavy cropping of portrait photos while letting landscapes breathe.
+                        const isLandscape = ratio ? ratio > 1.15 : false;
+                        const spanClass = isLandscape ? "md:col-span-2" : "md:col-span-1";
+                        
                         return (
-                            <div key={originalIndex} className={`${gridClass}`}>
+                            <div key={originalIndex} className={`${spanClass} w-full h-full transition-all duration-500`}>
                                 <RevealOnScroll className="w-full h-full">
-                                    <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
+                                    <div className="w-full h-full relative group bg-arhos-black/5 flex">
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            // Provide unconstrained height inside the grid so rows adapt to content heights
+                                            className="w-full h-full object-cover hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in min-h-[300px]"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
+                                            onLoad={(e) => handleImageLoad(originalIndex, e)}
                                         />
                                     </div>
                                 </RevealOnScroll>
