@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface NavigationProps {
   onCloseProject?: () => void;
@@ -14,7 +14,6 @@ export function Navigation({ onCloseProject }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // Initial animation
@@ -53,17 +52,6 @@ export function Navigation({ onCloseProject }: NavigationProps) {
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
     if (onCloseProject) onCloseProject(); // Close project detail if open
-
-    if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(() => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-      return;
-    }
 
     const element = document.getElementById(id);
     if (element) {
@@ -181,12 +169,6 @@ export function Navigation({ onCloseProject }: NavigationProps) {
               className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.studio || 'Ateliér'}
-            </button>
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); navigate('/blog'); }}
-              className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
-            >
-              {t.nav.blog || 'Magazín'}
             </button>
             <button
               onClick={() => scrollToSection('contact')}

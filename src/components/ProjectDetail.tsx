@@ -1,6 +1,5 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 
 type Project = {
@@ -19,46 +18,42 @@ interface ProjectDetailProps {
     onClose: () => void;
 }
 
-// Scroll Reveal Hook (Simple Intersection Observer)
-const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-    const ref = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('opacity-100', 'translate-y-0');
-                    entry.target.classList.remove('opacity-0', 'translate-y-12');
-                    observer.unobserve(entry.target);
-                }
-            },
-            { threshold: 0.1, rootMargin: '50px' }
-        );
-        if (ref.current) observer.observe(ref.current);
-        return () => observer.disconnect();
-    }, []);
-
-    return (
-        <div ref={ref} className={`opacity-0 translate-y-12 transition-all duration-1000 ease-out ${className || ''}`}>
-            {children}
-        </div>
-    );
-};
-
 export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
+    const [imageOrientations, setImageOrientations] = useState<Record<number, 'landscape' | 'portrait'>>({});
 
-    const handleImageLoad = (index: number, e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-        const target = e.target as HTMLImageElement;
-        setAspectRatios(prev => ({
-            ...prev,
-            [index]: target.naturalWidth / target.naturalHeight
-        }));
-    };
+    // Load image dimensions to determine orientation
+    useEffect(() => {
+        const orientations: Record<number, 'landscape' | 'portrait'> = {};
+        let loadedCount = 0;
+        const imagesToLoad = project.images.slice(1); // skip cover
+
+        if (imagesToLoad.length === 0) return;
+
+        imagesToLoad.forEach((src, idx) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                // If width > height, it's landscape. Otherwise portrait.
+                orientations[idx] = img.width > img.height ? 'landscape' : 'portrait';
+                loadedCount++;
+                if (loadedCount === imagesToLoad.length) {
+                    setImageOrientations(orientations);
+                }
+            };
+            img.onerror = () => {
+                // Default to landscape on error
+                orientations[idx] = 'landscape';
+                loadedCount++;
+                if (loadedCount === imagesToLoad.length) {
+                    setImageOrientations(orientations);
+                }
+            }
+        });
+    }, [project.images]);
 
     // Keyboard navigation & ESC
     useEffect(() => {
@@ -95,13 +90,35 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         return () => ctx.revert();
     }, []);
 
-    // Added portal mount check to avoid hydration issues if it was SSR
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => setMounted(true), []);
+    // The grid class is now determined dynamically inside the render loop based on the loaded orientations
 
-    if (!mounted) return null;
+    // Scroll Reveal Hook (Simple Intersection Observer)
+    const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+        const ref = useRef<HTMLDivElement>(null);
 
-    return createPortal(
+        useEffect(() => {
+            const observer = new IntersectionObserver(
+                ([entry]) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('opacity-100', 'translate-y-0');
+                        entry.target.classList.remove('opacity-0', 'translate-y-12');
+                        observer.unobserve(entry.target);
+                    }
+                },
+                { threshold: 0.1, rootMargin: '50px' }
+            );
+            if (ref.current) observer.observe(ref.current);
+            return () => observer.disconnect();
+        }, []);
+
+        return (
+            <div ref={ref} className={`opacity-0 translate-y-12 transition-all duration-1000 ease-out ${className}`}>
+                {children}
+            </div>
+        );
+    };
+
+    return (
         <div
             ref={containerRef}
             className="fixed inset-0 z-[200] bg-white overflow-y-auto scrollbar-hide text-arhos-black w-full"
@@ -154,45 +171,46 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </div>
                 </div>
 
-                {/* --- Main Content (Smart Aspect Ratio Grid) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto auto-rows-max items-start">
-                    {project.images.length === 1 && (
-                        <div className="md:col-span-2 w-full transition-all duration-500">
-                            <RevealOnScroll className="w-full">
-                                <div className="w-full relative group bg-arhos-black/5 block">
-                                    <img
-                                        src={project.images[0]}
-                                        alt={`${project.title} - view 1`}
-                                        className="w-full h-auto block object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
-                                        loading="eager"
-                                        onClick={() => setExpandedImageIndex(0)}
-                                    />
-                                </div>
-                            </RevealOnScroll>
-                        </div>
-                    )}
-                    
-                    {project.images.length > 1 && project.images.slice(1).map((img, idx) => {
+                {/* --- Main Content (Dynamic Grid) --- */}
+                {/* 
+                    Logic: 
+                    - We use a 12-column grid.
+                    - Landscape images try to take full width (col-span-12) or sometimes half if there are many.
+                    - Portrait images take half width (col-span-6).
+                    - We group them to ensure we don't have broken rows.
+                */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 lg:gap-24 w-full max-w-[1600px] mx-auto mt-10 md:mt-20">
+                    {project.images.slice(1).map((img, idx) => {
                         const originalIndex = idx + 1;
-                        const ratio = aspectRatios[originalIndex];
+                        const orientation = imageOrientations[idx] || 'landscape'; // default before loading
                         
-                        // Default to col-span-1, but once loaded, if it's landscape (ratio > 1.1), span both columns
-                        // This prevents heavy cropping of portrait photos while letting landscapes breathe.
-                        const isLandscape = ratio ? ratio > 1.15 : false;
-                        const spanClass = isLandscape ? "md:col-span-2" : "md:col-span-1";
-                        
+                        // Default fallback sizing
+                        let gridClass = "md:col-span-12"; 
+                        let imgClass = "object-contain"; // preserve aspect ratio
+                        let containerClass = "w-full";
+
+                        if (orientation === 'portrait') {
+                            gridClass = "md:col-span-6";
+                            // Give portrait images a specific max height so they don't become massive
+                            containerClass = "w-full max-h-[80vh] flex justify-center";
+                        } else {
+                            gridClass = "md:col-span-12";
+                            containerClass = "w-full max-h-[90vh] flex justify-center";
+                        }
+
+                        // If we have two portraits next to each other, they naturally sit side-by-side in col-span-6
+                        // If we have a landscape, it breaks to a new line and takes full width.
+
                         return (
-                            <div key={originalIndex} className={`${spanClass} w-full transition-all duration-500`}>
-                                <RevealOnScroll className="w-full">
-                                    <div className="w-full relative group bg-arhos-black/5 block">
+                            <div key={originalIndex} className={`${gridClass} flex items-center justify-center`}>
+                                <RevealOnScroll className="w-full h-full flex justify-center">
+                                    <div className={`${containerClass} relative group overflow-hidden bg-arhos-black/5`}>
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            // Provide unconstrained height inside the grid so rows adapt to content heights natively
-                                            className="w-full h-auto block object-contain hover:scale-[1.01] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            className={`w-full h-full ${imgClass} hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
-                                            onLoad={(e) => handleImageLoad(originalIndex, e)}
                                         />
                                     </div>
                                 </RevealOnScroll>
@@ -206,9 +224,8 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             {/* --- Expanded Image Overlay --- */}
             {expandedImageIndex !== null && (
                 <div
-                    className="fixed inset-0 z-[250] bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-zoom-out"
+                    className="fixed inset-0 z-[250] bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-zoom-out select-none"
                     onClick={() => setExpandedImageIndex(null)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                     onTouchStart={(e) => {
                         setTouchEnd(null);
                         setTouchStart(e.targetTouches[0].clientX);
@@ -264,7 +281,6 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </button>
                 </div>
             )}
-        </div>,
-        document.body
+        </div>
     );
 }
