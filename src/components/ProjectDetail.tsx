@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 
 type Project = {
@@ -96,7 +97,13 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         );
     };
 
-    return (
+    // Added portal mount check to avoid hydration issues if it was SSR
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted) return null;
+
+    return createPortal(
         <div
             ref={containerRef}
             className="fixed inset-0 z-[200] bg-white overflow-y-auto scrollbar-hide text-arhos-black w-full"
@@ -258,6 +265,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </button>
                 </div>
             )}
-        </div>
+        </div>,
+        document.body
     );
 }
