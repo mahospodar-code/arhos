@@ -177,19 +177,19 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     {project.images.slice(1).map((img, idx) => {
                         const isLandscape = aspectRatios[img] !== 'portrait'; // default to landscape if not loaded yet
                         const gridClass = isLandscape 
-                            ? "md:col-span-12 aspect-auto h-[60vh] md:h-[80vh]" 
+                            ? "md:col-span-12 flex" 
                             : "md:col-span-6 aspect-[4/5] md:aspect-[3/4]";
                             
                         const originalIndex = idx + 1; // Map back to original array index for lightbox
                         
                         return (
                             <div key={originalIndex} className={`${gridClass}`}>
-                                <RevealOnScroll className="w-full h-full">
-                                    <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
+                                <RevealOnScroll className="w-full h-full flex">
+                                    <div className={`w-full relative group overflow-hidden bg-arhos-black/5 ${isLandscape ? 'h-auto flex items-center justify-center' : 'h-full'}`}>
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className={`w-full h-full ${isLandscape ? 'object-contain' : 'object-cover'} hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
+                                            className={`w-full ${isLandscape ? 'h-auto' : 'h-full'} object-cover hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                         />
