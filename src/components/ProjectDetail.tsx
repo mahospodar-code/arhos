@@ -19,6 +19,32 @@ interface ProjectDetailProps {
     onClose: () => void;
 }
 
+// Scroll Reveal Hook (Simple Intersection Observer)
+const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-12');
+                    observer.unobserve(entry.target);
+                }
+            },
+            { threshold: 0.1, rootMargin: '50px' }
+        );
+        if (ref.current) observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div ref={ref} className={`opacity-0 translate-y-12 transition-all duration-1000 ease-out ${className || ''}`}>
+            {children}
+        </div>
+    );
+};
+
 export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
@@ -68,34 +94,6 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         }, containerRef);
         return () => ctx.revert();
     }, []);
-
-
-
-    // Scroll Reveal Hook (Simple Intersection Observer)
-    const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-        const ref = useRef<HTMLDivElement>(null);
-
-        useEffect(() => {
-            const observer = new IntersectionObserver(
-                ([entry]) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('opacity-100', 'translate-y-0');
-                        entry.target.classList.remove('opacity-0', 'translate-y-12');
-                        observer.unobserve(entry.target);
-                    }
-                },
-                { threshold: 0.1, rootMargin: '50px' }
-            );
-            if (ref.current) observer.observe(ref.current);
-            return () => observer.disconnect();
-        }, []);
-
-        return (
-            <div ref={ref} className={`opacity-0 translate-y-12 transition-all duration-1000 ease-out ${className}`}>
-                {children}
-            </div>
-        );
-    };
 
     // Added portal mount check to avoid hydration issues if it was SSR
     const [mounted, setMounted] = useState(false);
@@ -208,8 +206,9 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             {/* --- Expanded Image Overlay --- */}
             {expandedImageIndex !== null && (
                 <div
-                    className="fixed inset-0 z-[250] bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-zoom-out select-none"
+                    className="fixed inset-0 z-[250] bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-zoom-out"
                     onClick={() => setExpandedImageIndex(null)}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
                     onTouchStart={(e) => {
                         setTouchEnd(null);
                         setTouchStart(e.targetTouches[0].clientX);
