@@ -2,58 +2,35 @@
   "sk": [
     {
       "id": 1,
-      "title": "Vila v Bratislave",
+      "title": "Rodinný dom HY",
       "category": "Rezidenčné",
-      "location": "Bratislava, Slovensko",
-      "year": "2023",
+      "location": "Michalovce, Slovensko",
+      "year": "2026",
       "images": [
-        "/images/project_vila_bratislava.jpg",
-        "/images/project_vila_bratislava.jpg",
-        "/images/project_vila_bratislava.jpg",
-        "/images/project_vila_bratislava.jpg",
-        "/images/project_vila_bratislava.jpg"
+        "/images/1.jpg",
+        "/images/5.jpg",
+        "/images/6.jpg",
+        "/images/7.jpg",
+        "/images/10.jpg",
+        "/images/11.jpg",
+        "/images/12.jpg",
+        "/images/13.jpg",
+        "/images/15.jpg",
+        "/images/16.jpg",
+        "/images/19.jpg",
+        "/images/20.jpg",
+        "/images/21.jpg",
+        "/images/26.jpg",
+        "/images/30.jpg",
+        "/images/32.jpg",
+        "/images/33.jpg",
+        "/images/architectural-vision-d5b88e52-eae6-4bca-9a90-42feb4f7d8fb.png",
+        "/images/archviz-main-1771440755823.png",
+        "/images/archviz-main-1771440813855.png",
+        "/images/archviz-portrait-1771438047972.png",
+        "/images/archviz-portrait-1771442213675.png"
       ],
-      "description": "Moderná mestská vila zasadená do svahovitého terénu s výhľadom na panorámu mesta. Dôraz na súkromie a prepojenie s exteriérom.",
-      "area": "280 m²"
-    },
-    {
-      "id": 2,
-      "title": "Interiér Apartmánu",
-      "category": "Interiéry",
-      "location": "Praha, Česká republika",
-      "year": "2022",
-      "images": ["/images/project_interior_praha.jpg"],
-      "description": "Minimalistický interiér v historickom centre, ktorý rešpektuje pôvodné prvky a dopĺňa ich o súčasný dizajn.",
-      "area": "120 m²"
-    },
-    {
-      "id": 3,
-      "title": "Kancelárie Ostrava",
-      "category": "Komerčné",
-      "location": "Ostrava, Česká republika",
-      "year": "2023",
-      "images": ["/images/project_kancelare_ostrava.jpg"],
-      "description": "Flexibilné pracovné prostredie pre technologickú firmu s dôrazom na akustiku a svetelný komfort.",
-      "area": "850 m²"
-    },
-    {
-      "id": 4,
-      "title": "Rekonštrukcia Vily",
-      "category": "Rezidenčné",
-      "location": "Liberec, Česká republika",
-      "year": "2021",
-      "images": ["/images/project_rekonstrukce_liberec.jpg"],
-      "description": "Citlivá obnova medzivojnovej vily so zachovaním genia loci a adaptáciou pre potreby súčasnej rodiny.",
-      "area": "320 m²"
-    },
-    {
-      "id": 5,
-      "title": "Rodinný Dom Brno",
-      "category": "Rezidenčné",
-      "location": "Brno, Česká republika",
-      "year": "2022",
-      "images": ["/images/project_rodinny_dum_brno.jpg"],
-      "description": "Kompaktný rodinný dom na úzkom pozemku, ktorý maximálne využíva priestor a prirodzené svetlo.",
+      "description": "Predkladaná štúdia rodinného domu predstavuje koncept súčasného bývania, ktorý hľadá rovnováhu medzi vizuálnou čistotou a haptickým komfortom. Architektonické riešenie exteriéru je definované prísnou geometriou kubických hmôt, ktoré dynamizuje materiálový kontrast. Hladká biela omietka tu vedie dialóg s drsným kamenným obkladom a vertikálnym rytmom drevených lamiel, čím objekt získava hĺbku a prepojenie s prírodným kontextom.",
       "area": "190 m²"
     },
     {
@@ -62,7 +39,9 @@
       "category": "Rezidenčné",
       "location": "Plzeň, Česká republika",
       "year": "2023",
-      "images": ["/images/project_rodinny_dum_plzen.jpg"],
+      "images": [
+        "/images/project_rodinny_dum_plzen.jpg"
+      ],
       "description": "Energeticky pasívny dom s použitím prírodných materiálov a zelenou strechou.",
       "area": "210 m²"
     }
@@ -70,52 +49,35 @@
   "en": [
     {
       "id": 1,
-      "title": "Villa in Bratislava",
+      "title": "Family house HY",
       "category": "Residential",
-      "location": "Bratislava, Slovakia",
-      "year": "2023",
-      "images": ["/images/project_vila_bratislava.jpg"],
-      "description": "Modern urban villa set in sloping terrain with views of the city skyline. Emphasis on privacy and connection with the exterior.",
-      "area": "280 m²"
-    },
-    {
-      "id": 2,
-      "title": "Apartment Interior",
-      "category": "Interiors",
-      "location": "Prague, Czech Republic",
-      "year": "2022",
-      "images": ["/images/project_interior_praha.jpg"],
-      "description": "Minimalist interior in the historic center, respecting original elements while complementing them with contemporary design.",
-      "area": "120 m²"
-    },
-    {
-      "id": 3,
-      "title": "Ostrava Offices",
-      "category": "Commercial",
-      "location": "Ostrava, Czech Republic",
-      "year": "2023",
-      "images": ["/images/project_kancelare_ostrava.jpg"],
-      "description": "Flexible working environment for a tech company with a focus on acoustics and lighting comfort.",
-      "area": "850 m²"
-    },
-    {
-      "id": 4,
-      "title": "Villa Renovation",
-      "category": "Residential",
-      "location": "Liberec, Czech Republic",
-      "year": "2021",
-      "images": ["/images/project_rekonstrukce_liberec.jpg"],
-      "description": "Sensitive renovation of an interwar villa preserving the genius loci and adapting it for the needs of a contemporary family.",
-      "area": "320 m²"
-    },
-    {
-      "id": 5,
-      "title": "Family House Brno",
-      "category": "Residential",
-      "location": "Brno, Czech Republic",
-      "year": "2022",
-      "images": ["/images/project_rodinny_dum_brno.jpg"],
-      "description": "Compact family house on a narrow plot, maximizing space and natural light.",
+      "location": "Michalovce, Slovakia",
+      "year": "2026",
+      "images": [
+        "/images/1.jpg",
+        "/images/5.jpg",
+        "/images/6.jpg",
+        "/images/7.jpg",
+        "/images/10.jpg",
+        "/images/11.jpg",
+        "/images/12.jpg",
+        "/images/13.jpg",
+        "/images/15.jpg",
+        "/images/16.jpg",
+        "/images/19.jpg",
+        "/images/20.jpg",
+        "/images/21.jpg",
+        "/images/26.jpg",
+        "/images/30.jpg",
+        "/images/32.jpg",
+        "/images/33.jpg",
+        "/images/architectural-vision-d5b88e52-eae6-4bca-9a90-42feb4f7d8fb.png",
+        "/images/archviz-main-1771440755823.png",
+        "/images/archviz-main-1771440813855.png",
+        "/images/archviz-portrait-1771438047972.png",
+        "/images/archviz-portrait-1771442213675.png"
+      ],
+      "description": "The presented study of a family house presents the concept of contemporary living, which seeks a balance between visual purity and haptic comfort. The architectural design of the exterior is defined by the strict geometry of cubic masses, which dynamizes the material contrast. Here, the smooth white plaster conducts a dialogue with the rough stone cladding and the vertical rhythm of the wooden slats, giving the object depth and connection with the natural context.",
       "area": "190 m²"
     },
     {
@@ -124,7 +86,9 @@
       "category": "Residential",
       "location": "Plzeň, Czech Republic",
       "year": "2023",
-      "images": ["/images/project_rodinny_dum_plzen.jpg"],
+      "images": [
+        "/images/project_rodinny_dum_plzen.jpg"
+      ],
       "description": "Energy-passive house using natural materials and a green roof.",
       "area": "210 m²"
     }
