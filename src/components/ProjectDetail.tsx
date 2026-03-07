@@ -154,18 +154,19 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
                 {/* --- Main Content (Smart Grid) --- */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-4 w-full max-w-[1920px] mx-auto">
-                    {project.images.map((img, index) => {
-                        const gridClass = getGridClass(index);
+                    {project.images.slice(1).map((img, idx) => {
+                        const gridClass = getGridClass(idx);
+                        const originalIndex = idx + 1; // Map back to the original array index for the expanded view
                         return (
-                            <div key={index} className={`${gridClass}`}>
+                            <div key={originalIndex} className={`${gridClass}`}>
                                 <RevealOnScroll className="w-full h-full">
                                     <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
                                         <img
                                             src={img}
-                                            alt={`${project.title} - view ${index + 1}`}
+                                            alt={`${project.title} - view ${originalIndex}`}
                                             className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
-                                            loading={index === 0 ? "eager" : "lazy"}
-                                            onClick={() => setExpandedImageIndex(index)}
+                                            loading={idx === 0 ? "eager" : "lazy"}
+                                            onClick={() => setExpandedImageIndex(originalIndex)}
                                         />
                                     </div>
                                 </RevealOnScroll>
