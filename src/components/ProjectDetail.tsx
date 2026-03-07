@@ -177,7 +177,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     {project.images.slice(1).map((img, idx) => {
                         const isLandscape = aspectRatios[img] !== 'portrait'; // default to landscape if not loaded yet
                         const gridClass = isLandscape 
-                            ? "md:col-span-12 aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9]" 
+                            ? "md:col-span-12 aspect-auto h-[60vh] md:h-[80vh]" 
                             : "md:col-span-6 aspect-[4/5] md:aspect-[3/4]";
                             
                         const originalIndex = idx + 1; // Map back to original array index for lightbox
@@ -189,7 +189,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            className={`w-full h-full ${isLandscape ? 'object-contain' : 'object-cover'} hover:scale-[1.02] transition-transform duration-1000 ease-out cursor-zoom-in`}
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
                                         />
