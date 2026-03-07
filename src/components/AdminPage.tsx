@@ -121,6 +121,28 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
     setImageUrls([...imageUrls, ...newImgs]);
   };
 
+  const moveImage = (index: number, direction: 'up' | 'down') => {
+    const ni = direction === 'up' ? index - 1 : index + 1;
+    if (ni < 0 || ni >= imageUrls.length) return;
+    const newImgs = [...imageUrls];
+    [newImgs[index], newImgs[ni]] = [newImgs[ni], newImgs[index]];
+    setImageUrls(newImgs);
+  };
+
+  const setAsCover = (index: number) => {
+    if (index === 0) return;
+    const newImgs = [...imageUrls];
+    const [cover] = newImgs.splice(index, 1);
+    newImgs.unshift(cover);
+    setImageUrls(newImgs);
+  };
+
+  const updateImageUrl = (index: number, newUrl: string) => {
+    const newImgs = [...imageUrls];
+    newImgs[index] = newUrl;
+    setImageUrls(newImgs);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(
@@ -157,15 +179,37 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
         <div><label className={labelClass}>Rozloha</label><input className={inputClass} value={area} onChange={e => setArea(e.target.value)} required /></div>
         <div><label className={labelClass}>Kategória</label><select className={inputClass} value={category} onChange={e => setCategory(e.target.value)}><option>Rezidenčné</option><option>Interiéry</option><option>Komerčné</option></select></div>
       </div>
-      <div className="mt-6">
-        <label className={labelClass}>Obrázky (/public/images/)</label>
-        <div className="flex gap-2 mb-2">
+      <div className="mt-6 border-t border-arhos-gray/10 pt-6">
+        <label className={labelClass}>Obrázky (prvá fotka je titulná)</label>
+        <div className="flex gap-2 mb-4">
           <input className={inputClass} value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="/images/foto.webp" />
-          <button type="button" onClick={() => { if(newImageUrl) setImageUrls([...imageUrls, newImageUrl]); setNewImageUrl(''); }} className="px-4 bg-arhos-black text-white">+</button>
-          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 bg-gray-100">📁</button>
+          <button type="button" onClick={() => { if(newImageUrl) setImageUrls([...imageUrls, newImageUrl]); setNewImageUrl(''); }} className="px-4 bg-arhos-black text-white hover:bg-arhos-terracotta transition-colors">+</button>
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 bg-gray-100 hover:bg-gray-200 transition-colors" title="Vybrať z disku (len načíta názov)">📁</button>
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
         </div>
-        {imageUrls.map((url, idx) => <div key={idx} className="flex gap-2 text-sm bg-gray-50 p-2 mb-1">{url} <button type="button" onClick={()=>setImageUrls(imageUrls.filter((_,i)=>i!==idx))} className="text-red-500 ml-auto">✕</button></div>)}
+        <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+          {imageUrls.map((url, idx) => (
+            <div key={idx} className={`flex items-center gap-3 p-2 border transition-colors ${idx === 0 ? 'border-arhos-terracotta bg-orange-50/20' : 'border-arhos-gray/20 bg-gray-50'}`}>
+              <div className="w-16 h-12 bg-arhos-cream flex-shrink-0 relative">
+                <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" />
+                {idx === 0 && <span className="absolute -top-2 -right-2 text-xl" title="Titulná fotka">⭐</span>}
+              </div>
+              <div className="flex-1">
+                <input 
+                  value={url} 
+                  onChange={(e) => updateImageUrl(idx, e.target.value)}
+                  className="w-full text-xs font-sans bg-transparent border-b border-transparent hover:border-arhos-gray/30 focus:border-arhos-terracotta focus:outline-none py-1"
+                />
+              </div>
+              <div className="flex gap-1 items-center">
+                <button type="button" onClick={() => moveImage(idx, 'up')} disabled={idx === 0} className="p-1 px-2 text-xs text-arhos-gray hover:bg-white disabled:opacity-30">▲</button>
+                <button type="button" onClick={() => moveImage(idx, 'down')} disabled={idx === imageUrls.length - 1} className="p-1 px-2 text-xs text-arhos-gray hover:bg-white disabled:opacity-30">▼</button>
+                {idx !== 0 && <button type="button" onClick={() => setAsCover(idx)} className="p-1 px-2 text-xs text-arhos-terracotta hover:bg-orange-100 transition-colors bg-white border border-arhos-terracotta/20 rounded" title="Nastaviť ako titulku">⭐ Titulná</button>}
+                <button type="button" onClick={() => setImageUrls(imageUrls.filter((_,i)=>i!==idx))} className="p-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-700 ml-2">✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="flex gap-3 mt-8">
         <button type="submit" className="flex-1 bg-arhos-terracotta text-white py-3">Uložiť</button>
