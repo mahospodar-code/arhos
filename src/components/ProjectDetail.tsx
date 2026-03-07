@@ -23,6 +23,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
 
     // Keyboard navigation & ESC
     useEffect(() => {
@@ -144,8 +145,13 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto items-start">
                     {project.images.slice(1).map((img, idx) => {
                         const originalIndex = idx + 1; // Map back to original index
+                        const ratio = aspectRatios[originalIndex];
+                        // Default to span 2 (full width) until loaded, or if ratio >= 1.2 (landscape)
+                        const isLandscape = !ratio || ratio >= 1.1; 
+                        const colSpanClass = isLandscape ? "md:col-span-2" : "md:col-span-1";
+
                         return (
-                            <div key={originalIndex} className="w-full h-auto">
+                            <div key={originalIndex} className={`w-full h-auto ${colSpanClass} transition-all duration-500`}>
                                 <RevealOnScroll className="w-full">
                                     <div className="w-full relative group bg-arhos-black/5">
                                         <img
@@ -154,6 +160,12 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                                             className="w-full h-auto object-contain transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
+                                            onLoad={(e) => {
+                                                const { naturalWidth, naturalHeight } = e.currentTarget;
+                                                if (naturalWidth && naturalHeight) {
+                                                    setAspectRatios(prev => ({ ...prev, [originalIndex]: naturalWidth / naturalHeight }));
+                                                }
+                                            }}
                                         />
                                     </div>
                                 </RevealOnScroll>
