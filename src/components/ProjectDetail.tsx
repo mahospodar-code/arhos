@@ -20,19 +20,25 @@ interface ProjectDetailProps {
 
 export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [expandedImage, setExpandedImage] = useState<string | null>(null);
+    const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-    // Close on ESC
+    // Keyboard navigation & ESC
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                if (expandedImage) setExpandedImage(null);
+                if (expandedImageIndex !== null) setExpandedImageIndex(null);
                 else onClose();
+            } else if (e.key === 'ArrowRight' && expandedImageIndex !== null) {
+                setExpandedImageIndex(prev => prev !== null ? (prev + 1) % project.images.length : null);
+            } else if (e.key === 'ArrowLeft' && expandedImageIndex !== null) {
+                setExpandedImageIndex(prev => prev !== null ? (prev - 1 + project.images.length) % project.images.length : null);
             }
         };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
-    }, [onClose, expandedImage]);
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose, expandedImageIndex, project.images.length]);
 
     // Lock body scroll
     useEffect(() => {
@@ -55,15 +61,15 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
     // Helper for grid classes based on index
     const getGridClass = (index: number) => {
-        // Pattern: Cycle of 7 images.
-        // First 3 images: Row of 3 (col-span-4) -> Portrait aspect
-        // Next 4 images: Row of 4 (col-span-3) -> Square aspect
-        const i = index % 7;
+        // Pattern: 1 - 2 - 1 - 2
+        const i = index % 3;
 
-        if (i < 3) {
-            return "md:col-span-4 aspect-[4/5]";
+        if (i === 0) {
+            // Full width
+            return "md:col-span-12 aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9]";
         } else {
-            return "md:col-span-3 aspect-square";
+            // Half width
+            return "md:col-span-6 aspect-[4/3] md:aspect-[3/2]";
         }
     };
 
@@ -159,7 +165,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                                             alt={`${project.title} - view ${index + 1}`}
                                             className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={index === 0 ? "eager" : "lazy"}
-                                            onClick={() => setExpandedImage(img)}
+                                            onClick={() => setExpandedImageIndex(index)}
                                         />
                                     </div>
                                 </RevealOnScroll>
@@ -171,16 +177,63 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             </div>
 
             {/* --- Expanded Image Overlay --- */}
-            {expandedImage && (
+            {expandedImageIndex !== null && (
                 <div
-                    className="fixed inset-0 z-[250] bg-white flex items-center justify-center cursor-zoom-out"
-                    onClick={() => setExpandedImage(null)}
+                    className="fixed inset-0 z-[250] bg-white/95 backdrop-blur-sm flex items-center justify-center cursor-zoom-out select-none"
+                    onClick={() => setExpandedImageIndex(null)}
+                    onTouchStart={(e) => {
+                        setTouchEnd(null);
+                        setTouchStart(e.targetTouches[0].clientX);
+                    }}
+                    onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
+                    onTouchEnd={() => {
+                        if (!touchStart || !touchEnd) return;
+                        const distance = touchStart - touchEnd;
+                        const minSwipeDistance = 50;
+                        if (distance > minSwipeDistance) {
+                            setExpandedImageIndex((expandedImageIndex + 1) % project.images.length);
+                        } else if (distance < -minSwipeDistance) {
+                            setExpandedImageIndex((expandedImageIndex - 1 + project.images.length) % project.images.length);
+                        }
+                    }}
                 >
+                    {/* Desktop Prev Arrow */}
+                    <button 
+                        className="absolute left-4 top-1/2 -translate-y-1/2 p-4 text-arhos-black hover:text-arhos-terracotta bg-white/50 hover:bg-white border border-arhos-gray/10 rounded-full transition-all hidden md:flex items-center justify-center z-10"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedImageIndex((expandedImageIndex - 1 + project.images.length) % project.images.length);
+                        }}
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    
                     <img
-                        src={expandedImage}
+                        src={project.images[expandedImageIndex]}
                         alt="Zoomed view"
-                        className="w-full h-full object-contain p-4 md:p-12 animate-in fade-in zoom-in-95 duration-300"
+                        className="w-full h-full object-contain p-0 md:p-12 animate-in fade-in zoom-in-95 duration-300 pointer-events-none"
                     />
+
+                    {/* Desktop Next Arrow */}
+                    <button 
+                        className="absolute right-4 top-1/2 -translate-y-1/2 p-4 text-arhos-black hover:text-arhos-terracotta bg-white/50 hover:bg-white border border-arhos-gray/10 rounded-full transition-all hidden md:flex items-center justify-center z-10"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedImageIndex((expandedImageIndex + 1) % project.images.length);
+                        }}
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    
+                    <button 
+                        className="absolute top-6 right-6 px-4 py-2 text-xs font-display uppercase tracking-widest text-arhos-black hover:text-arhos-terracotta bg-white/50 hover:bg-white border border-arhos-gray/10 rounded-full transition-all z-10" 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setExpandedImageIndex(null); 
+                        }}
+                    >
+                        Zavrieť
+                    </button>
                 </div>
             )}
         </div>
