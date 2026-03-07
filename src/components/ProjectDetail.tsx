@@ -23,7 +23,38 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
     const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [aspectRatios, setAspectRatios] = useState<Record<number, number>>({});
+    
+    // Store aspect ratio 'landscape' | 'portrait' for each image URL
+    const [aspectRatios, setAspectRatios] = useState<Record<string, 'landscape' | 'portrait'>>({});
+
+    // Load images to determine their aspect ratios
+    useEffect(() => {
+        const loadAspectRatios = async () => {
+            const ratios: Record<string, 'landscape' | 'portrait'> = {};
+            
+            // Only process images that will be in the gallery (skip cover)
+            const galleryImages = project.images.slice(1);
+            
+            await Promise.all(galleryImages.map(url => {
+                return new Promise<void>((resolve) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        ratios[url] = img.width > img.height ? 'landscape' : 'portrait';
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        ratios[url] = 'landscape'; // fallback
+                        resolve();
+                    };
+                    img.src = url;
+                });
+            }));
+            
+            setAspectRatios(ratios);
+        };
+        
+        loadAspectRatios();
+    }, [project.images]);
 
     // Keyboard navigation & ESC
     useEffect(() => {
@@ -60,7 +91,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         return () => ctx.revert();
     }, []);
 
-    // Removed getGridClass to allow natural sizes
+
 
     // Scroll Reveal Hook (Simple Intersection Observer)
     const RevealOnScroll = ({ children, className }: { children: React.ReactNode, className?: string }) => {
@@ -141,31 +172,26 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                     </div>
                 </div>
 
-                {/* --- Main Content (Natural Flow Gallery) --- */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-[1920px] mx-auto items-start">
+                {/* --- Main Content (Smart Grid) --- */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-4 w-full max-w-[1920px] mx-auto">
                     {project.images.slice(1).map((img, idx) => {
-                        const originalIndex = idx + 1; // Map back to original index
-                        const ratio = aspectRatios[originalIndex];
-                        // Default to span 2 (full width) until loaded, or if ratio >= 1.2 (landscape)
-                        const isLandscape = !ratio || ratio >= 1.1; 
-                        const colSpanClass = isLandscape ? "md:col-span-2" : "md:col-span-1";
-
+                        const isLandscape = aspectRatios[img] !== 'portrait'; // default to landscape if not loaded yet
+                        const gridClass = isLandscape 
+                            ? "md:col-span-12 aspect-[4/3] md:aspect-[16/9] lg:aspect-[21/9]" 
+                            : "md:col-span-6 aspect-[4/5] md:aspect-[3/4]";
+                            
+                        const originalIndex = idx + 1; // Map back to original array index for lightbox
+                        
                         return (
-                            <div key={originalIndex} className={`w-full h-auto ${colSpanClass} transition-all duration-500`}>
-                                <RevealOnScroll className="w-full">
-                                    <div className="w-full relative group bg-arhos-black/5">
+                            <div key={originalIndex} className={`${gridClass}`}>
+                                <RevealOnScroll className="w-full h-full">
+                                    <div className="w-full h-full relative group overflow-hidden bg-arhos-black/5">
                                         <img
                                             src={img}
                                             alt={`${project.title} - view ${originalIndex}`}
-                                            className="w-full h-auto object-contain transition-transform duration-1000 ease-out cursor-zoom-in"
+                                            className="w-full h-full object-cover hover:scale-[1.05] transition-transform duration-1000 ease-out cursor-zoom-in"
                                             loading={idx === 0 ? "eager" : "lazy"}
                                             onClick={() => setExpandedImageIndex(originalIndex)}
-                                            onLoad={(e) => {
-                                                const { naturalWidth, naturalHeight } = e.currentTarget;
-                                                if (naturalWidth && naturalHeight) {
-                                                    setAspectRatios(prev => ({ ...prev, [originalIndex]: naturalWidth / naturalHeight }));
-                                                }
-                                            }}
                                         />
                                     </div>
                                 </RevealOnScroll>

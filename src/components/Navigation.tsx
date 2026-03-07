@@ -53,9 +53,21 @@ export function Navigation({ onCloseProject }: NavigationProps) {
     setIsMobileMenuOpen(false);
     if (onCloseProject) onCloseProject(); // Close project detail if open
 
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    // If we're not on the home page (e.g., on a blog post), navigate Home first, then scroll
+    if (window.location.pathname !== '/') {
+      navigate(`/#${id}`);
+      // Give React Router time to render the home page before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -169,6 +181,12 @@ export function Navigation({ onCloseProject }: NavigationProps) {
               className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.studio || 'Ateliér'}
+            </button>
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); navigate('/blog'); }}
+              className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
+            >
+              {t.nav.blog || 'Magazín'}
             </button>
             <button
               onClick={() => scrollToSection('contact')}
