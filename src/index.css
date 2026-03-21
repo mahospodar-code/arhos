@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap');
+/* Fonty Mulish a Questrial sú načítané v index.html — Inter a Sora boli odstránené ako duplicitné */
 
 @tailwind base;
 @tailwind components;
@@ -62,12 +62,12 @@
   
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Mulish', sans-serif;
     overflow-x: hidden;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Questrial', sans-serif;
     letter-spacing: -0.02em;
     line-height: 0.95;
   }

@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 // --- Configuration ---
-const ADMIN_PASSWORD = 'arhos2026';
+// DÔLEŽITÉ: Toto heslo slúži len ako prvý filter na klientskej strane.
+// Skutočná autentifikácia prebieha na serveri (api/publish.js) cez ADMIN_PASSWORD env variable na Verceli.
+// Zmeň heslo tu A v Vercel Environment Variables (ADMIN_PASSWORD).
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'arhos2026';
 
 // --- Types ---
 interface ProjectItem {
@@ -338,7 +341,7 @@ function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?
   const labelClass = 'font-display text-xs text-arhos-gray uppercase tracking-wider mb-1 block';
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg mb-8 border-t-4 border-blue-500">
+    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-lg mb-8 border-t-4 border-arhos-terracotta">
       <h2 className="font-display text-xl font-bold mb-6">{post ? 'Upraviť článok' : 'Nový článok'}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
@@ -371,7 +374,7 @@ function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?
         </div>
       </div>
       <div className="flex gap-3 mt-8">
-        <button type="submit" className="flex-1 bg-blue-600 text-white py-3">Uložiť článok</button>
+        <button type="submit" className="flex-1 bg-arhos-terracotta text-arhos-cream py-3 font-display font-medium hover:bg-arhos-terracotta/90 transition-colors">Uložiť článok</button>
         <button type="button" onClick={onCancel} className="px-6 py-3 border">Zrušiť</button>
       </div>
     </form>
@@ -499,7 +502,7 @@ export function AdminPage() {
         </div>
         <div className="flex gap-4 items-center">
           {hasChanges[activeTab] && (
-            <button onClick={() => handlePublish(activeTab)} disabled={publishing} className="bg-green-600 px-4 py-2 text-sm font-bold animate-pulse">
+            <button onClick={() => handlePublish(activeTab)} disabled={publishing} className="bg-arhos-terracotta text-arhos-cream px-4 py-2 text-sm font-display font-bold animate-pulse hover:bg-arhos-terracotta/90 transition-colors">
               {publishing ? '⏳ ...' : `🚀 Publikovať ${activeTab === 'projects'? 'Projekty' : 'Blog'}`}
             </button>
           )}
@@ -515,7 +518,7 @@ export function AdminPage() {
         )}
 
         {!showForm && (
-          <button onClick={() => { setEditingItem(undefined); setShowForm(true); }} className={`mb-6 px-6 py-3 text-white font-bold ${activeTab === 'projects' ? 'bg-arhos-black' : 'bg-blue-600'}`}>
+          <button onClick={() => { setEditingItem(undefined); setShowForm(true); }} className="mb-6 px-6 py-3 bg-arhos-black text-arhos-cream font-display font-bold hover:bg-arhos-terracotta transition-colors">
             + Pridať {activeTab === 'projects' ? 'projekt' : 'článok'}
           </button>
         )}
@@ -549,7 +552,7 @@ export function AdminPage() {
             {showForm && <BlogForm post={editingItem} enPost={editingItem ? enBlog.find(p => p.id === editingItem.id) : undefined} onSave={handleSaveBlog} onCancel={() => setShowForm(false)} />}
             <div className="space-y-3">
               {skBlog.map((p) => (
-                <div key={p.id} className="bg-white p-4 flex gap-4 items-center group shadow-sm border-l-4 border-blue-500">
+                <div key={p.id} className="bg-white p-4 flex gap-4 items-center group shadow-sm border-l-4 border-arhos-terracotta">
                   <div className="w-16 h-12 bg-gray-100">{p.coverImage && <img src={p.coverImage} className="w-full h-full object-cover" alt=""/>}</div>
                   <div className="flex-1">
                     <div className="font-display font-medium">{p.title}</div>

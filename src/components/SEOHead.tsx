@@ -11,7 +11,7 @@ interface SEOHeadProps {
 export function SEOHead({ title, description, image, url }: SEOHeadProps) {
     const siteTitle = 'ARHOS Atelier | Architektúra & Dizajn';
     const defaultDescription = 'Architektonický ateliér ARHOS. Racionálna architektúra, autentický interiér a nadčasový dizajn.';
-    const siteUrl = 'https://arhos.sk'; // To be updated with real domain
+    const siteUrl = 'https://arhos.sk';
 
     const finalTitle = title ? `${title} | ARHOS` : siteTitle;
     const finalDescription = description || defaultDescription;

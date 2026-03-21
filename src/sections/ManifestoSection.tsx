@@ -94,8 +94,11 @@ export function ManifestoSection() {
       <div className="absolute inset-0 z-0">
         <img
           src="/images/hero_architecture.jpg"
-          alt="Architecture"
+          alt="ARHOS Atelier — architektonické štúdio"
           className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-black/30" />
       </div>
