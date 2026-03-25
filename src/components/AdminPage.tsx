@@ -151,12 +151,14 @@ function ProjectForm({ project, enProject, onSave, onCancel }: { project?: Proje
         const data = await res.json();
         if (data.secure_url) {
           uploadedUrls.push(data.secure_url);
+        } else if (data.error) {
+          throw new Error(`Cloudinary chyba riadok: ${data.error.message}`);
         }
       }
       setImageUrls(prev => [...prev, ...uploadedUrls]);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload failed', err);
-      alert('Nahrávanie zlyhalo. Skontrolujte internet alebo nastavenie Cloudinary.');
+      alert(`Nahrávanie zlyhalo: ${err.message || 'Skontrolujte internet alebo nastavenie Cloudinary.'}`);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -309,9 +311,11 @@ function BlogForm({ post, enPost, onSave, onCancel }: { post?: BlogPost; enPost?
       const data = await res.json();
       if (data.secure_url) {
         setCoverImage(data.secure_url);
+      } else if (data.error) {
+        throw new Error(`Cloudinary chyba: ${data.error.message}`);
       }
-    } catch (err) {
-      alert("Chyba pri nahrávaní obrázku.");
+    } catch (err: any) {
+      alert(`Chyba pri nahrávaní obrázku: ${err.message || 'Neznáma chyba'}`);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
