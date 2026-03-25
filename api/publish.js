@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   // Simple auth check - heslo je uložené ako ADMIN_PASSWORD env variable na Verceli
   const { password, type, data } = req.body;
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'arhos2026';
   if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
