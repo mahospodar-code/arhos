@@ -28,7 +28,7 @@ export function useProjects() {
   useEffect(() => {
     if (cachedData) return;
 
-    fetch('/data/projects.json')
+    fetch(`/data/projects.json?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data: ProjectsData) => {
         cachedData = data;

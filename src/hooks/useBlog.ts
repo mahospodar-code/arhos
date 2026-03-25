@@ -25,8 +25,7 @@ export function useBlog() {
 
   useEffect(() => {
     if (cachedData) return;
-
-    fetch('/data/blog.json')
+    fetch(`/data/blog.json?t=${Date.now()}`, { cache: 'no-store' })
       .then((res) => res.json())
       .then((data: BlogData) => {
         cachedData = data;

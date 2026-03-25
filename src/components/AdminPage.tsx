@@ -407,8 +407,8 @@ export function AdminPage() {
   useEffect(() => {
     if (isAuthenticated && !loaded) {
       Promise.all([
-        fetch('/data/projects.json').then(r => r.json()).catch(() => ({ sk: [], en: [] })),
-        fetch('/data/blog.json').then(r => r.json()).catch(() => ({ sk: [], en: [] }))
+        fetch(`/data/projects.json?t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ sk: [], en: [] })),
+        fetch(`/data/blog.json?t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ sk: [], en: [] }))
       ]).then(([projData, blogData]: [ProjectsData, BlogData]) => {
         setSkProjects(projData.sk || []);
         setEnProjects(projData.en || []);
