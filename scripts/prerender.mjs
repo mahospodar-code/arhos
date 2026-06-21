@@ -34,6 +34,25 @@ const server = createServer(async (req, res) => {
   }
 });
 
+async function launchBrowser() {
+  const puppeteer = (await import('puppeteer')).default;
+  // Na Verceli / Linux CI použij @sparticuz/chromium (puppeteerov vlastný Chromium
+  // tam padá na chýbajúce systémové knižnice — "Failed to launch ... Code: 127").
+  if (process.platform === 'linux') {
+    const chromium = (await import('@sparticuz/chromium')).default;
+    return puppeteer.launch({
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  }
+  // Lokálne (macOS/Windows) použij Chromium dodaný s puppeteer.
+  return puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+  });
+}
+
 async function main() {
   if (!existsSync(join(DIST, 'index.html'))) {
     console.warn('[prerender] dist/index.html chýba, preskakujem.');
@@ -53,9 +72,8 @@ async function main() {
 
   const inline = `<script>window.__INITIAL_DATA__=${JSON.stringify({ projects, blog }).replace(/</g, '\\u003c')}</script>`;
 
-  const puppeteer = (await import('puppeteer')).default;
   await new Promise((r) => server.listen(PORT, r));
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await launchBrowser();
 
   for (const route of routes) {
     const page = await browser.newPage();
