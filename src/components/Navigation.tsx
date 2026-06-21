@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { gsap } from 'gsap';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 interface NavigationProps {
   onCloseProject?: () => void;
@@ -116,13 +116,14 @@ export function Navigation({ onCloseProject }: NavigationProps) {
               {t.nav.studio}
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-arhos-terracotta transition-all duration-300 group-hover:w-full" />
             </button>
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); navigate('/blog'); }}
+            <Link
+              to="/blog"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="text-sm font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors relative group whitespace-nowrap"
             >
               {t.nav.blog}
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-arhos-terracotta transition-all duration-300 group-hover:w-full" />
-            </button>
+            </Link>
             <button
               onClick={() => scrollToSection('contact')}
               className="text-sm font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors relative group"
@@ -182,12 +183,13 @@ export function Navigation({ onCloseProject }: NavigationProps) {
             >
               {t.nav.studio || 'Ateliér'}
             </button>
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); navigate('/blog'); }}
+            <Link
+              to="/blog"
+              onClick={() => setIsMobileMenuOpen(false)}
               className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"
             >
               {t.nav.blog || 'Magazín'}
-            </button>
+            </Link>
             <button
               onClick={() => scrollToSection('contact')}
               className="text-xl font-display font-medium text-arhos-black hover:text-arhos-terracotta transition-colors"

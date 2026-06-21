@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useBlog } from '../hooks/useBlog';
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -18,7 +18,6 @@ export function BlogSection({ limit }: BlogSectionProps) {
 
   const { blogPosts, loading } = useBlog();
   const { language } = useLanguage();
-  const navigate = useNavigate();
 
   const posts = language === 'en' ? blogPosts.en : blogPosts.sk;
   // Sort by date descending
@@ -86,21 +85,21 @@ export function BlogSection({ limit }: BlogSectionProps) {
           {language === 'en' ? 'Journal & Process' : 'Magazín & Proces'}
         </h2>
         {limit && (
-          <button 
-            onClick={() => navigate('/blog')}
+          <Link
+            to="/blog"
             className="text-arhos-terracotta font-sans font-medium text-sm hover:underline"
           >
             {language === 'en' ? 'View all articles →' : 'Zobraziť všetky články →'}
-          </button>
+          </Link>
         )}
       </div>
 
       {/* Grid */}
       <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[clamp(24px,2.5vw,40px)]">
         {displayPosts.map((post) => (
-          <article
+          <Link
             key={post.id}
-            onClick={() => navigate(`/blog/${post.slug}`)}
+            to={`/blog/${post.slug}`}
             className="blog-card group cursor-pointer flex flex-col h-full"
           >
             {/* Image Container */}
@@ -127,7 +126,7 @@ export function BlogSection({ limit }: BlogSectionProps) {
                 {language === 'en' ? 'Read article' : 'Čítať článok'} <span className="text-arhos-terracotta">→</span>
               </div>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </section>
