@@ -15,7 +15,9 @@ interface BlogData {
   en: BlogPost[];
 }
 
-let cachedData: BlogData | null = null;
+// Prefill from prerendered inline data so the first client render already has content.
+let cachedData: BlogData | null =
+  (typeof window !== 'undefined' && (window as any).__INITIAL_DATA__?.blog) || null;
 
 export function useBlog() {
   const [blogPosts, setBlogPosts] = useState<BlogData>(

@@ -16,8 +16,10 @@ interface ProjectsData {
   en: ProjectItem[];
 }
 
-// Cache to avoid re-fetching
-let cachedData: ProjectsData | null = null;
+// Cache to avoid re-fetching. Prefill from prerendered inline data so the first
+// client render already has content (no loading flash, matches prerendered HTML).
+let cachedData: ProjectsData | null =
+  (typeof window !== 'undefined' && (window as any).__INITIAL_DATA__?.projects) || null;
 
 export function useProjects() {
   const [projects, setProjects] = useState<ProjectsData>(
