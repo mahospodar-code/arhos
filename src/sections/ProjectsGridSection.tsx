@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProjectDetail } from '../components/ProjectDetail';
+import { Link } from 'react-router-dom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -150,10 +151,10 @@ export function ProjectsGridSection({ selectedProject, setSelectedProject, proje
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[clamp(14px,1.6vw,28px)]"
         >
           {filteredProjects.map((project) => (
-            <article
+            <Link
               key={project.id}
-              className="project-card group cursor-pointer"
-              onClick={() => setSelectedProject && setSelectedProject(project)}
+              to={`/project/${project.id}`}
+              className="project-card group cursor-pointer block"
             >
               {/* Image Container */}
               <div className="relative aspect-[4/3] overflow-hidden mb-4">
@@ -179,7 +180,7 @@ export function ProjectsGridSection({ selectedProject, setSelectedProject, proje
                   {project.location}
                 </p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

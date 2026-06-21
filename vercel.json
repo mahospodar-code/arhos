@@ -1,4 +1,12 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "arhos.sk" }],
+      "destination": "https://www.arhos.sk/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/((?!api|images|.*\\..*).*)", "destination": "/index.html" }
   ],

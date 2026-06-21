@@ -11,7 +11,7 @@ interface SEOHeadProps {
 export function SEOHead({ title, description, image, url }: SEOHeadProps) {
     const siteTitle = 'ARHOS Atelier | Architektúra & Dizajn';
     const defaultDescription = 'Architektonický ateliér ARHOS. Racionálna architektúra, autentický interiér a nadčasový dizajn.';
-    const siteUrl = 'https://arhos.sk';
+    const siteUrl = 'https://www.arhos.sk';
 
     const finalTitle = title ? `${title} | ARHOS` : siteTitle;
     const finalDescription = description || defaultDescription;
@@ -27,11 +27,6 @@ export function SEOHead({ title, description, image, url }: SEOHeadProps) {
             <meta name="robots" content="index, follow" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <link rel="canonical" href={finalUrl} />
-
-            {/* Hreflang for language alternatives */}
-            <link rel="alternate" hrefLang="sk" href={finalUrl} />
-            <link rel="alternate" hrefLang="en" href={finalUrl} />
-            <link rel="alternate" hrefLang="x-default" href={finalUrl} />
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="website" />
@@ -62,7 +57,6 @@ export function SEOHead({ title, description, image, url }: SEOHeadProps) {
                     "description": defaultDescription,
                     "address": {
                         "@type": "PostalAddress",
-                        "streetAddress": "",
                         "addressLocality": "Michalovce",
                         "addressRegion": "Košický kraj",
                         "postalCode": "07101",
@@ -73,6 +67,11 @@ export function SEOHead({ title, description, image, url }: SEOHeadProps) {
                         "latitude": "48.7548",
                         "longitude": "21.9195"
                     },
+                    "areaServed": [
+                        { "@type": "City", "name": "Michalovce" },
+                        { "@type": "City", "name": "Košice" },
+                        { "@type": "City", "name": "Bratislava" }
+                    ],
                     "telephone": "+421 910 274 925",
                     "email": "arhos.atelier@gmail.com",
                     "openingHoursSpecification": {
