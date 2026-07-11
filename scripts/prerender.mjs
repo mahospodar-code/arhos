@@ -1,5 +1,6 @@
 // Post-build prerendering: vyrenderuje každú routu do statického HTML, aby crawlery
 // a AI vyhľadávače bez JS videli telo stránky (nielen meta z index.html).
+// Zároveň generuje sitemap.xml z rovnakých dát ako routy — nemôžu sa rozísť.
 // Non-fatal: ak čokoľvek zlyhá, build pokračuje s pôvodným dist (so statickým SEO meta).
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
@@ -7,7 +8,7 @@ import { existsSync } from 'node:fs';
 import { join, extname } from 'node:path';
 
 const DIST = join(process.cwd(), 'dist');
-const DATA_DIR = join(process.cwd(), 'public', 'data');
+const SITE_URL = 'https://www.arhos.sk';
 const PORT = 41000 + Math.floor(Math.random() * 2000);
 
 const MIME = {
@@ -59,18 +60,32 @@ async function main() {
     return;
   }
 
-  // Načítaj dáta na (a) enumeráciu routes a (b) inline do HTML (sync init na klientovi = bez loading flashu)
-  let projects = { sk: [], en: [] }, blog = { sk: [], en: [] };
-  try { projects = JSON.parse(await readFile(join(DATA_DIR, 'projects.json'), 'utf8')); } catch {}
-  try { blog = JSON.parse(await readFile(join(DATA_DIR, 'blog.json'), 'utf8')); } catch {}
+  // Routy sa odvodzujú z dát projektov (src/data/projects.json)
+  let projects = { sk: [] };
+  try {
+    projects = JSON.parse(await readFile(join(process.cwd(), 'src', 'data', 'projects.json'), 'utf8'));
+  } catch {}
+  const ids = [...new Set((projects.sk || []).map((p) => p.id))];
+  const routes = ['/', ...ids.map((id) => `/projekt/${id}`)];
 
-  const ids = new Set([...(projects.sk || []), ...(projects.en || [])].map((p) => p.id));
-  const slugs = new Set([...(blog.sk || []), ...(blog.en || [])].map((b) => b.slug));
-  const routes = ['/', '/blog',
-    ...[...ids].map((id) => `/project/${id}`),
-    ...[...slugs].map((s) => `/blog/${s}`)];
-
-  const inline = `<script>window.__INITIAL_DATA__=${JSON.stringify({ projects, blog }).replace(/</g, '\\u003c')}</script>`;
+  // sitemap.xml z tých istých rout
+  const today = new Date().toISOString().slice(0, 10);
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes
+  .map(
+    (r) => `  <url>
+    <loc>${SITE_URL}${r}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>${r === '/' ? '1.0' : '0.8'}</priority>
+  </url>`,
+  )
+  .join('\n')}
+</urlset>
+`;
+  await writeFile(join(DIST, 'sitemap.xml'), sitemap);
+  console.log('[prerender] sitemap.xml —', routes.length, 'URL');
 
   await new Promise((r) => server.listen(PORT, r));
   const browser = await launchBrowser();
@@ -78,10 +93,31 @@ async function main() {
   for (const route of routes) {
     const page = await browser.newPage();
     try {
+      await page.setViewport({ width: 1366, height: 900 });
       await page.goto(`http://localhost:${PORT}${route}`, { waitUntil: 'networkidle0', timeout: 30000 });
-      await new Promise((r) => setTimeout(r, 700)); // doraz na helmet + render
-      let html = await page.content();
-      html = html.replace('</head>', `${inline}\n</head>`);
+      // Preskroluj stránku, nech IntersectionObserver odkryje všetky .reveal sekcie,
+      // a vráť sa hore — zachytené HTML má potom celý obsah viditeľný aj bez JS.
+      await page.evaluate(async () => {
+        await new Promise((done) => {
+          let y = 0;
+          const step = () => {
+            y += 800;
+            window.scrollTo(0, y);
+            if (y < document.body.scrollHeight) setTimeout(step, 60);
+            else {
+              window.scrollTo(0, 0);
+              done(undefined);
+            }
+          };
+          step();
+        });
+      });
+      // Deterministicky odkry všetky reveal sekcie (IO počas rýchleho scrollu nemusí stihnúť všetky)
+      await page.evaluate(() => {
+        document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-in'));
+      });
+      await new Promise((r) => setTimeout(r, 900)); // doraz na meta + reveal transitions
+      const html = await page.content();
       const outDir = route === '/' ? DIST : join(DIST, route.replace(/^\//, ''));
       await mkdir(outDir, { recursive: true });
       await writeFile(join(outDir, 'index.html'), html);
