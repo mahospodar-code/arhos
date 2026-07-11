@@ -1,73 +1,27 @@
-# React + TypeScript + Vite
+# ARHOS ateliér — www.arhos.sk
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web architektonického ateliéru ARHOS (v2). React 19 + Vite 7 + Tailwind CSS 4 + TypeScript, nasadené na Verceli.
 
-Currently, two official plugins are available:
+## Vývoj
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev        # http://localhost:5199
+npm run build      # produkčný build + prerender (dist/)
+npm run preview    # lokálny náhľad dist/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Štruktúra
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- `src/data/projects.json` — dáta projektov (názov, lokalita, fotky, popis, `cover` = index titulnej fotky)
+- `src/data/site.ts` — kontakty, sociálne siete, Formspree endpoint
+- `src/components/` — sekcie stránky (Hero, Služby, Projekty, Proces, Kontakt…)
+- `src/pages/` — routy: `/` (Home) a `/projekt/:id` (detail projektu)
+- `scripts/prerender.mjs` — postbuild: statické HTML pre každú routu (SEO/AI crawlery) + generuje `sitemap.xml`
+- `vercel.json` — redirecty (arhos.sk→www, staré URL), SPA rewrite, security headers
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Ako upravovať obsah bez programovania: pozri [ADMIN_GUIDE.md](ADMIN_GUIDE.md).
+
+## Deploy
+
+Push do `main` = automatický deploy na Vercel (build ~2–4 min vrátane prerenderu).

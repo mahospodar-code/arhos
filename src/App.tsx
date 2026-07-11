@@ -1,151 +1,43 @@
-import { useEffect, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Navigation } from './components/Navigation';
-import { ManifestoSection } from './sections/ManifestoSection';
-import { ProjectsGridSection } from './sections/ProjectsGridSection';
-import { ApproachSection } from './sections/ApproachSection';
-import { ContactSection } from './sections/ContactSection';
-import { ProjectDetail } from './components/ProjectDetail';
-import { AdminPage } from './components/AdminPage';
-import { SEOHead } from './components/SEOHead';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
-import { useProjects } from './hooks/useProjects';
-import { BlogSection } from './sections/BlogSection';
-import { BlogPostRoute } from './components/BlogPostRoute';
+import { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import Nav from './components/Nav';
+import Footer from './components/Footer';
+import MobileCTA from './components/MobileCTA';
+import { Grain, GridGuides } from './components/ui';
+import Home from './pages/Home';
+import ProjectPage from './pages/Project';
 
-gsap.registerPlugin(ScrollTrigger);
-
-// Scroll to top on route change
-function ScrollToTop() {
-  const { pathname } = useLocation();
+function ScrollManager() {
+  const { pathname, hash } = useLocation();
   useEffect(() => {
+    if (hash) {
+      const el = document.querySelector(hash);
+      if (el) {
+        requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        return;
+      }
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
   return null;
 }
 
-// Home Page Component
-function Home() {
-  const mainRef = useRef<HTMLElement>(null);
-  const navigate = useNavigate();
-  const { language } = useLanguage();
-  const { projects } = useProjects();
-
-  // Get projects for current language
-  const projectItems = language === 'en' ? projects.en : projects.sk;
-
-  useEffect(() => {
-    // Refresh ScrollTrigger when returning to Home
-    ScrollTrigger.refresh();
-  }, []);
-
-  const handleProjectClick = (project: any) => {
-    navigate(`/project/${project.id}`);
-  };
-
+export default function App() {
   return (
-    <>
-      <SEOHead
-        title="ARHOS Atelier | Architektúra & Dizajn"
-        description="Racionálna architektúra, autentický interiér a nadčasový dizajn. Architektonický ateliér pôsobiaci na Slovensku a v Čechách."
-      />
-
-      {/* Navigation */}
-      <Navigation />
-
-      <main ref={mainRef} className="relative">
-        <div className="relative z-10" id="manifesto">
-          <ManifestoSection />
-        </div>
-
-        <div className="relative z-30" id="projects">
-          <ProjectsGridSection
-            selectedProject={null}
-            setSelectedProject={handleProjectClick}
-            projectItems={projectItems}
-          />
-        </div>
-
-        <div className="relative z-[40]" id="approach">
-          <ApproachSection />
-        </div>
-
-        <div className="relative z-[50]" id="blog">
-          <BlogSection limit={3} />
-        </div>
-
-        <div className="relative z-[60]" id="contact">
-          <ContactSection />
-        </div>
+    <div className="relative min-h-dvh overflow-x-clip">
+      <GridGuides />
+      <Grain />
+      <ScrollManager />
+      <Nav />
+      <main className="relative z-10">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/projekt/:id" element={<ProjectPage />} />
+          <Route path="*" element={<Home />} />
+        </Routes>
       </main>
-    </>
+      <Footer />
+      <MobileCTA />
+    </div>
   );
 }
-
-// Project Detail Page Component
-function ProjectPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { language } = useLanguage();
-  const { projects } = useProjects();
-
-  // Find project data based on ID and Language (from JSON)
-  const projectItems = language === 'en' ? projects.en : projects.sk;
-  const project = projectItems.find((p: any) => p.id === Number(id));
-
-  if (!project) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-white text-arhos-black font-display text-xl">
-        Projekt nenájdený
-        <button onClick={() => navigate('/')} className="ml-4 underline opacity-50 hover:opacity-100">
-          Späť domov
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <SEOHead
-        title={project.title}
-        description={project.description}
-        image={project.images[0]}
-        url={`/project/${project.id}`}
-      />
-      {/* Navigation stays visible even on detail page for easy return */}
-      <Navigation onCloseProject={() => navigate('/')} />
-
-      <ProjectDetail
-        project={project}
-        onClose={() => navigate('/')}
-      />
-    </>
-  );
-}
-
-function App() {
-  return (
-    <HelmetProvider>
-      <LanguageProvider>
-        <Router>
-          <ScrollToTop />
-          <div className="grain-overlay" />
-
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/project/:id" element={<ProjectPage />} />
-            <Route path="/blog" element={<><Navigation /><div className="pt-16"><BlogSection /></div><ContactSection /></>} />
-            <Route path="/blog/:slug" element={<><Navigation /><BlogPostRoute /><ContactSection /></>} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-
-        </Router>
-      </LanguageProvider>
-    </HelmetProvider>
-  );
-}
-
-export default App;

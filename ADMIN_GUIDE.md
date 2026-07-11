@@ -1,90 +1,59 @@
-# ARHOS Atelier - Admin Guide
+# ARHOS — správa obsahu (web v2)
 
-Tento návod slúži na správu obsahu webstránky ARHOS Atelier. Všetky zmeny je možné vykonávať priamo cez webové rozhranie GitHub, bez nutnosti programovania.
+Všetky zmeny sa robia úpravou súborov priamo na GitHube (ikona ceruzky → Commit changes).
+Po commite do `main` sa web automaticky prebuildne a nasadí (~2–4 minúty).
 
-## 1. Kde sa nachádza obsah?
+## 1. Kde je obsah?
 
-Všetky texty a dáta o projektoch sú uložené v jednom súbore:
-`src/data/translations.ts`
-
-Všetky obrázky (fotky projektov, logá) sú uložené v priečinku:
-`public/images/`
-
----
+| Čo | Súbor |
+|---|---|
+| Projekty (názvy, fotky, popisy) | `src/data/projects.json` |
+| Kontakty, telefón, e-mail, sociálne siete | `src/data/site.ts` |
+| Texty sekcií (hero, služby, proces, FAQ…) | `src/components/*.tsx` |
 
 ## 2. Ako pridať nový projekt
 
-Pre pridanie nového projektu musíte upraviť súbor `translations.ts` a nahrať fotku.
+1. Nahraj fotky na Cloudinary (účet `dm5dsjnjk`) a skopíruj si URL adresy fotiek.
+2. Otvor `src/data/projects.json` a do poľa `"sk"` pridaj nový objekt (skopíruj existujúci a uprav):
 
-### Krok 1: Nahratie fotky
-1. Otvorte priečinok `public/images/` na GitHube.
-2. Kliknite na **Add file** > **Upload files**.
-3. Presuňte tam vašu novú fotku (napr. `projekt_novy_dom.jpg`).
-4. Kliknite na zelené tlačidlo **Commit changes**.
-
-### Krok 2: Úprava dát
-1. Otvorte súbor `src/data/translations.ts`.
-2. Kliknite na ikonu ceruzky (Edit file).
-3. Nájdite sekciu `projects` a v nej `items`. Vyzerá to takto:
-
-```typescript
-items: [
-    {
-        id: 1,
-        title: 'Vila pod Hradom',
-        location: 'Bratislava',
-        category: 'Rezidenčné',
-        image: '/images/project_vila_bratislava.jpg' // Cesta k fotke ktorú ste nahrali
-    },
-    // ... ďalšie projekty
-]
-```
-
-4. Skopírujte celý blok jedného projektu (od `{` po `},`) a vložte ho na začiatok alebo koniec zoznamu.
-5. Upravte údaje:
-   - **id**: Musí byť unikátne číslo (napr. ak posledný bol 6, dajte 7).
-   - **title**: Názov projektu.
-   - **location**: Lokácia.
-   - **category**: Kategória (použite presne: 'Rezidenčné', 'Interiér', alebo 'Komerčné').
-   - **image**: Názov súboru fotky, ktorú ste nahrali v Kroku 1 (vždy musí začínať `/images/`).
-
-6. **Dôležité**: Toto musíte urobiť dvakrát - raz pre sekciu `sk` (Slovenčina) a raz pre sekciu `en` (Angličtina), ktorá je nižšie v tom istom súbore.
-
-7. Kliknite na **Commit changes** (uložiť).
-
----
-
-## 3. Ako meniť texty na stránke
-
-Ak chcete zmeniť napríklad nadpis v Manifeste alebo kontaktné údaje:
-
-1. Otvorte `src/data/translations.ts`.
-2. Nájdite text, ktorý chcete zmeniť. Súbor je rozdelený na `sk` a `en`.
-
-Príklad zmeny kontaktu:
-```typescript
-contact: {
-    headline: 'Vybudujme niečo originálne a trvalé.', // Tu prepíšte text
-    email: 'novy.email@arhos.sk',
-    // ...
+```json
+{
+  "id": 3,
+  "title": "Rodinný dom XY",
+  "category": "Rezidenčné",
+  "location": "Košice",
+  "year": "2026",
+  "cover": 0,
+  "area": "175 m²",
+  "images": [
+    "https://res.cloudinary.com/dm5dsjnjk/image/upload/v.../fotka1.jpg",
+    "https://res.cloudinary.com/dm5dsjnjk/image/upload/v.../fotka2.jpg"
+  ],
+  "description": "Popis projektu…"
 }
 ```
 
-3. Uložte zmeny cez **Commit changes**.
+- **id** — unikátne číslo (posledné +1). Detail bude na `/projekt/<id>`.
+- **cover** — poradové číslo titulnej fotky v poli `images`, počíta sa od 0.
+- Fotky vkladaj v plnej kvalite — web si sám pýta zmenšené verzie (Cloudinary transformácie).
 
----
+3. Commit changes. Sitemap aj prerender sa aktualizujú automaticky — nič ďalšie netreba.
 
-## 4. Ako zmeniť poradie projektov
+Poznámka: sekcia `"en"` v tom istom súbore sa momentálne nepoužíva (web je len po slovensky);
+ak ju chceš udržiavať, uprav ju rovnako.
 
-Poradie, v akom sú projekty zapísané v súbore `translations.ts` (v zozname `items`), určuje ich poradie na stránke.
-Jednoducho presuňte celý blok `{ ... }` konkrétneho projektu na iné miesto v zozname.
+## 3. Ako zmeniť texty
 
-## 5. Dôležité pravidlá pre obrázky
+Texty sekcií sú v `src/components/` (napr. `Hero.tsx`, `Services.tsx`, `Process.tsx`,
+`Atelier.tsx` — FAQ, `Contact.tsx`). Prepíš text v úvodzovkách a commitni.
+Ak si nie si istý, napíš Claudovi — úprava textu je otázka minúty.
 
-- **Formát**: Používajte `.jpg` pre fotky a `.png` alebo `.svg` pre grafiku.
-- **Veľkosť**: Snažte sa, aby fotky nemali viac ako 300-500kb. Obrovské fotky spomalia stránku.
-- **Pomer strán**: Ideálny pomer pre projekty je 4:3 (na šírku), ale stránka sa prispôsobí aj iným.
+## 4. Formulár a WhatsApp
 
----
+- Formulár posiela dopyty cez Formspree (`src/data/site.ts` → `formspree`); notifikácie chodia na arhos.atelier@gmail.com.
+- WhatsApp tlačidlo používa číslo v `site.ts` → `whatsapp`.
 
-*Tip: Ak si nie ste istí, vždy sa pozrite, ako sú zapísané existujúce veci a len ich skopírujte a upravte.*
+## 5. Čo už neexistuje (oproti v1)
+
+- `/admin` rozhranie a `api/publish.js` boli odstránené — obsah sa spravuje priamo v repe (bezpečnejšie, menej údržby).
+- Jazykový prepínač SK/EN a blog boli vypnuté; dáta blogu ostali len v histórii gitu.
