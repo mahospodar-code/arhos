@@ -49,7 +49,7 @@ export default function Process() {
                 {/* zárez na kótovacej čiare */}
                 <span className="absolute top-0 left-0 h-4 w-px bg-ink/40" aria-hidden />
                 <span className="serif-accent text-4xl text-acc">{s.n}</span>
-                <h3 className="mt-4 font-disp text-[17px] font-semibold leading-snug">{s.title}</h3>
+                <h3 className="mt-4 font-disp text-[17px] leading-snug">{s.title}</h3>
                 <p className="mt-3 text-[14px] leading-relaxed text-mut">{s.text}</p>
               </div>
             </Reveal>

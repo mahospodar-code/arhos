@@ -69,12 +69,12 @@ export default function Services() {
                 <div className="flex items-center justify-between">
                   <span className="serif-accent text-4xl text-acc">{s.n}.</span>
                   {s.featured && (
-                    <span className="bg-acc px-2.5 py-1.5 font-disp text-[10px] font-semibold uppercase tracking-[0.2em] text-paper">
+                    <span className="bg-acc px-2.5 py-1.5 font-disp text-[10px] uppercase tracking-[0.2em] text-paper">
                       Najžiadanejšie
                     </span>
                   )}
                 </div>
-                <h3 className="mt-6 font-disp text-2xl font-semibold tracking-tight">{s.title}</h3>
+                <h3 className="mt-6 font-disp text-2xl tracking-tight">{s.title}</h3>
                 <p className="serif-accent mt-2 text-[17px] text-mut">{s.tagline}</p>
                 <p className="mt-5 text-[15px] leading-relaxed text-mut">{s.text}</p>
                 <ul className="mt-7 mb-8">
@@ -90,7 +90,7 @@ export default function Services() {
                 </ul>
                 <a
                   href="#kontakt"
-                  className="group mt-auto inline-flex items-center gap-3 font-disp text-[12.5px] font-semibold uppercase tracking-[0.18em] transition-colors hover:text-acc"
+                  className="group mt-auto inline-flex items-center gap-3 font-disp text-[12.5px] uppercase tracking-[0.18em] transition-colors hover:text-acc"
                 >
                   {s.cta}
                   <Arrow className="transition-transform duration-300 group-hover:translate-x-1.5" />

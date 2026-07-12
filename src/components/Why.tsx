@@ -37,7 +37,7 @@ export default function Why() {
             <Reveal key={r.n} delay={i * 110}>
               <div className="border-l border-line pl-7">
                 <span className="serif-accent text-3xl text-acc">n°{r.n}</span>
-                <h3 className="mt-5 font-disp text-xl font-semibold leading-snug">{r.title}</h3>
+                <h3 className="mt-5 font-disp text-xl leading-snug">{r.title}</h3>
                 <p className="mt-4 text-[15px] leading-relaxed text-mut">{r.text}</p>
               </div>
             </Reveal>

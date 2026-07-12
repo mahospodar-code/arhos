@@ -95,9 +95,9 @@ export function SectionHead({
       </div>
       {title && (
         <h2
-          className={`mt-10 font-disp text-[clamp(2.1rem,4.6vw,4.3rem)] font-medium leading-[1.04] tracking-[-0.02em] ${
-            wide ? 'md:whitespace-nowrap' : 'max-w-[24ch]'
-          } ${dark ? 'text-paper' : 'text-ink'}`}
+          className={`mt-10 font-disp text-[clamp(2.1rem,4.6vw,4.3rem)] leading-[1.04] tracking-[-0.02em] ${
+ wide ? 'md:whitespace-nowrap' : 'max-w-[24ch]'
+ } ${dark ? 'text-paper' : 'text-ink'}`}
         >
           {title}
         </h2>
@@ -146,7 +146,7 @@ export function Logo({ className = '' }: { className?: string }) {
         <polygon points="151.19 144.93 122.95 144.89 75.79 54.42 75.72 54.29 28.49 144.89 0.25 144.93 75.72 0.32 151.19 144.93" />
       </svg>
       <span className="flex flex-col leading-none">
-        <span className="font-disp text-[17px] font-bold tracking-[0.22em]">ARHOS</span>
+        <span className="font-disp text-[17px] tracking-[0.22em]">ARHOS</span>
         <span className="mt-[5px] font-disp text-[8.5px] tracking-[0.58em] opacity-60">
           ATELIÉR
         </span>

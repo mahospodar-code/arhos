@@ -46,13 +46,13 @@ function ProjectCard({
           <div
             ref={pillRef}
             aria-hidden
-            className="pointer-events-none absolute hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 bg-acc px-4 py-2.5 font-disp text-[11px] font-semibold uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex"
+            className="pointer-events-none absolute hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 bg-acc px-4 py-2.5 font-disp text-[11px] uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex"
           >
             Pozrieť projekt <Arrow />
           </div>
         </div>
         <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
-          <h3 className="font-disp text-xl font-medium tracking-tight transition-colors group-hover:text-acc md:text-2xl">
+          <h3 className="font-disp text-xl tracking-tight transition-colors group-hover:text-acc md:text-2xl">
             {p.title}
           </h3>
           <span className="label whitespace-nowrap">

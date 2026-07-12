@@ -151,7 +151,7 @@ export default function Contact() {
               <h3 className="label-paper">Radšej priamo?</h3>
               <a
                 href={SITE.phoneHref}
-                className="mt-5 block font-disp text-3xl font-medium tracking-tight transition-colors hover:text-acc"
+                className="mt-5 block font-disp text-3xl tracking-tight transition-colors hover:text-acc"
               >
                 {SITE.phoneDisplay}
               </a>
@@ -165,7 +165,7 @@ export default function Contact() {
                 href={SITE.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-7 inline-flex items-center gap-3 border border-paper/30 px-6 py-4 font-disp text-[12.5px] font-semibold uppercase tracking-[0.16em] transition-colors hover:border-acc hover:text-acc"
+                className="mt-7 inline-flex items-center gap-3 border border-paper/30 px-6 py-4 font-disp text-[12.5px] uppercase tracking-[0.16em] transition-colors hover:border-acc hover:text-acc"
               >
                 <WhatsAppIcon /> Napíšte na WhatsApp
               </a>

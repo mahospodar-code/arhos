@@ -61,7 +61,7 @@ export default function Atelier() {
                 <Reveal key={v} delay={i * 80}>
                   <div className="flex items-baseline gap-5 border-t border-line py-4">
                     <span className="label">0{i + 1}</span>
-                    <span className="font-disp text-lg font-medium">{v}</span>
+                    <span className="font-disp text-lg">{v}</span>
                   </div>
                 </Reveal>
               ))}
@@ -76,7 +76,7 @@ export default function Atelier() {
               <Reveal key={f.q} delay={i * 60}>
                 <details className="faq group border-t border-line">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5">
-                    <span className="font-disp text-[16.5px] font-medium">{f.q}</span>
+                    <span className="font-disp text-[16.5px]">{f.q}</span>
                     <span className="faq-x relative h-4 w-4 shrink-0 text-acc" aria-hidden>
                       <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-current" />
                       <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current" />
