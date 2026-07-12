@@ -32,8 +32,8 @@ export const SITE = {
   whatsapp:
     'https://wa.me/421910274925?text=' +
     encodeURIComponent('Dobrý deň, mám záujem o nezáväznú konzultáciu.'),
-  instagram: 'https://www.instagram.com/arhos_atelier',
-  facebook: 'https://www.facebook.com/arhosatelier',
+  instagram: 'https://www.instagram.com/arhos.atelier',
+  facebook: 'https://www.facebook.com/profile.php?id=61589100601259',
   formspree: 'https://formspree.io/f/meerqgpr',
   cities: 'Michalovce · Košice · Bratislava',
 };
