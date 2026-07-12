@@ -96,20 +96,17 @@ export default function ProjectPage() {
           </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 md:mt-24 md:gap-8">
-          {gallery.map((img, i) => {
-            const wide = i % 5 === 4;
-            return (
-              <Reveal key={img} className={wide ? 'sm:col-span-2' : ''} delay={(i % 2) * 90}>
-                <img
-                  src={cld(img, wide ? 1600 : 1000)}
-                  alt={`${p.title} — fotografia ${i + 2}`}
-                  loading="lazy"
-                  className={`w-full bg-paper2 object-cover ${wide ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}
-                />
-              </Reveal>
-            );
-          })}
+        <div className="mt-16 columns-1 gap-6 sm:columns-2 md:mt-24 md:gap-8">
+          {gallery.map((img, i) => (
+            <Reveal key={img} delay={(i % 4) * 70} className="mb-6 break-inside-avoid md:mb-8">
+              <img
+                src={cld(img, 1100)}
+                alt={`${p.title} — fotografia ${i + 2}`}
+                loading="lazy"
+                className="w-full bg-paper2"
+              />
+            </Reveal>
+          ))}
         </div>
 
         <Reveal className="mt-20 md:mt-28">
