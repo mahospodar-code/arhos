@@ -31,7 +31,7 @@
       ],
       "description": "Predkladaná štúdia rodinného domu predstavuje koncept súčasného bývania, ktorý hľadá rovnováhu medzi vizuálnou čistotou a haptickým komfortom. Architektonické riešenie exteriéru je definované prísnou geometriou kubických hmôt, ktoré dynamizuje materiálový kontrast. Hladká biela omietka tu vedie dialóg s drsným kamenným obkladom a vertikálnym rytmom drevených lamiel, čím objekt získava hĺbku a prepojenie s prírodným kontextom.",
       "area": "190 m²",
-      "cover": 1
+      "cover": 0
     },
     {
       "id": 2,
@@ -61,7 +61,7 @@
       ],
       "description": "Predkladaná architektonická štúdia predstavuje nadčasovú fúziu modernej elegancie a naturálnej autenticity, pričom jej dizajnérskym ťažiskom je prepracovaný koncept v štýle „modern farmhouse“ (moderný vidiecky štýl). Hlavnou filozofiou návrhu je vytvorenie teplého, vizuálne bohatého prostredia, ktoré čerpá inšpiráciu z tradičnej rustikálnej architektúry, no interpretuje ju prostredníctvom čistých línií a súčasných detailov. Dizajn stavia na silnej taktilnej materialite a charakteristických prvkoch farmhouse estetiky. Interiéru dominuje naturálne drevo, ktoré sa objavuje nielen na podlahách a nábytku , ale aj v podobe priznaných stropných trámov a tradičných interiérových dverí. Autentický vidiecky charakter je umocnený použitím masívnych posuvných dverí typu „barn door“ s priznaným čiernym kovovým kovaním. Kontrastom k teplej textúre dreva je klasický biely drevený obklad stien s vertikálnym drážkovaním (shiplap), ktorý priestor presvetľuje. Tento čistý základ je zámerne konfrontovaný so surovou textúrou lámaného kameňa. Ten tvorí výrazné akcentové plochy, či už ako obklad dominantného krbu v obývacej časti, alebo ako organický prvok v kúpeľniach a toaletách. Nezameniteľný vidiecky charakter sa naplno prejavuje v kuchyni, ktorej dominuje typický veľký biely keramický drez (apron-front sink). Zvolená kombinácia spodných drevených skriniek a bielych vrchných plôch s klasickým obkladom udržiava dokonalú rovnováhu medzi rustikálnosťou a svetlosťou. Celkový koncept je zjednotený drobnými industriálnymi akcentmi v podobe matného čierneho kovu na svietidlách, nábytkových úchytkách a sanitárnom vybavení. Atmoféru dotvárajú pletené koše a terakotové kvetináče , čím vzniká harmonický a vizuálne komplexný celok.",
       "area": "132,4",
-      "cover": 9
+      "cover": 0
     }
   ],
   "en": [
@@ -96,7 +96,7 @@
       ],
       "description": "The presented study of a family house presents the concept of contemporary living, which seeks a balance between visual purity and haptic comfort. The architectural design of the exterior is defined by the strict geometry of cubic masses, which dynamizes the material contrast. Here, the smooth white plaster conducts a dialogue with the rough stone cladding and the vertical rhythm of the wooden slats, giving the object depth and connection with the natural context.",
       "area": "190 m²",
-      "cover": 1
+      "cover": 0
     },
     {
       "id": 2,
@@ -126,7 +126,7 @@
       ],
       "description": "This architectural study presents a timeless fusion of modern elegance and natural authenticity, centered around a sophisticated modern farmhouse design. The core philosophy is to create a warm, visually rich environment that draws inspiration from traditional rustic architecture while interpreting it through clean lines and contemporary detailing.\n",
       "area": "132,4",
-      "cover": 9
+      "cover": 0
     }
   ]
 }
