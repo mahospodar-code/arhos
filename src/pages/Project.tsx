@@ -54,7 +54,7 @@ export default function ProjectPage() {
             <Arrow className="rotate-180 transition-transform group-hover:-translate-x-1.5" />
             Všetky projekty
           </Link>
-          <h1 className="mt-8 max-w-[18ch] font-disp text-[clamp(2.3rem,5.4vw,4.9rem)] font-medium leading-[1.02] tracking-[-0.02em]">
+          <h1 className="mt-8 max-w-[18ch] font-disp text-[clamp(2.3rem,5.4vw,4.9rem)] leading-[1.02] tracking-[-0.02em]">
             {p.title}
           </h1>
         </Reveal>
@@ -64,7 +64,7 @@ export default function ProjectPage() {
             {meta.map(([k, v], i) => (
               <div key={k} className={`py-5 ${i > 0 ? 'md:pl-8' : ''}`}>
                 <dt className="label">{k}</dt>
-                <dd className="mt-2 font-disp text-lg font-medium">{v}</dd>
+                <dd className="mt-2 font-disp text-lg">{v}</dd>
               </div>
             ))}
           </dl>
@@ -128,7 +128,7 @@ export default function ProjectPage() {
           >
             <span>
               <span className="label">Ďalší projekt</span>
-              <span className="mt-3 block font-disp text-2xl font-medium tracking-tight transition-colors group-hover:text-acc md:text-4xl">
+              <span className="mt-3 block font-disp text-2xl tracking-tight transition-colors group-hover:text-acc md:text-4xl">
                 {next.title}
               </span>
             </span>

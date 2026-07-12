@@ -76,7 +76,7 @@ export default function Footer() {
 
         <div
           aria-hidden
-          className="wordmark-outline mt-16 select-none text-center font-disp text-[clamp(4.5rem,16.5vw,15rem)] font-bold leading-[0.85] tracking-[0.03em]"
+          className="wordmark-outline mt-16 select-none text-center font-disp text-[clamp(4.5rem,16.5vw,15rem)] leading-[0.85] tracking-[0.03em]"
         >
           ARHOS
         </div>

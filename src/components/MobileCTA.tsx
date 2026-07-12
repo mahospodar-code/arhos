@@ -28,13 +28,13 @@ export default function MobileCTA() {
       <div className="grid grid-cols-2 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
         <a
           href={SITE.phoneHref}
-          className="flex items-center justify-center gap-2.5 py-4 font-disp text-[12px] font-semibold uppercase tracking-[0.15em] text-ink"
+          className="flex items-center justify-center gap-2.5 py-4 font-disp text-[12px] uppercase tracking-[0.15em] text-ink"
         >
           <PhoneIcon /> Zavolať
         </a>
         <Link
           to="/#kontakt"
-          className="flex items-center justify-center gap-2.5 bg-ink py-4 font-disp text-[12px] font-semibold uppercase tracking-[0.15em] text-paper"
+          className="flex items-center justify-center gap-2.5 bg-ink py-4 font-disp text-[12px] uppercase tracking-[0.15em] text-paper"
         >
           Konzultácia
         </Link>

@@ -60,7 +60,7 @@ export default function Nav() {
             <a
               key={l.hash}
               href={href(l.hash)}
-              className="font-disp text-[13px] font-medium uppercase tracking-[0.14em] transition-colors hover:text-acc"
+              className="font-disp text-[13px] uppercase tracking-[0.14em] transition-colors hover:text-acc"
             >
               {l.label}
             </a>
@@ -70,7 +70,7 @@ export default function Nav() {
         <div className="hidden items-center gap-7 lg:flex">
           <a
             href={SITE.phoneHref}
-            className="font-disp text-[13px] font-medium tracking-[0.06em] transition-colors hover:text-acc"
+            className="font-disp text-[13px] tracking-[0.06em] transition-colors hover:text-acc"
           >
             {SITE.phoneDisplay}
           </a>
@@ -116,7 +116,7 @@ export default function Nav() {
                 className="group flex items-baseline gap-4 border-b border-paper/10 py-5"
               >
                 <span className="label-paper">0{i + 1}</span>
-                <span className="font-disp text-3xl font-medium tracking-tight transition-colors group-hover:text-acc">
+                <span className="font-disp text-3xl tracking-tight transition-colors group-hover:text-acc">
                   {l.label}
                 </span>
               </a>
