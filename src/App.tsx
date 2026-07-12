@@ -6,6 +6,7 @@ import MobileCTA from './components/MobileCTA';
 import { Grain, GridGuides } from './components/ui';
 import Home from './pages/Home';
 import ProjectPage from './pages/Project';
+import Admin from './pages/Admin';
 
 function ScrollManager() {
   const { pathname, hash } = useLocation();
@@ -22,22 +23,38 @@ function ScrollManager() {
   return null;
 }
 
-export default function App() {
+function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-dvh overflow-x-clip">
       <GridGuides />
       <Grain />
-      <ScrollManager />
       <Nav />
-      <main className="relative z-10">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/projekt/:id" element={<ProjectPage />} />
-          <Route path="*" element={<Home />} />
-        </Routes>
-      </main>
+      <main className="relative z-10">{children}</main>
       <Footer />
       <MobileCTA />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <ScrollManager />
+      <Routes>
+        <Route path="/admin" element={<Admin />} />
+        <Route
+          path="*"
+          element={
+            <SiteLayout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/projekt/:id" element={<ProjectPage />} />
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </SiteLayout>
+          }
+        />
+      </Routes>
+    </>
   );
 }
