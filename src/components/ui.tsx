@@ -158,7 +158,7 @@ export function Logo({ className = '' }: { className?: string }) {
 /* ---------- CTA tlačidlá ---------- */
 
 const btnBase =
-  'group inline-flex cursor-pointer items-center justify-center gap-3 px-7 py-4 font-disp text-[12.5px] font-semibold uppercase tracking-[0.16em] transition-colors duration-300';
+  'group inline-flex cursor-pointer items-center justify-center gap-3 px-7 py-4 font-disp text-[12.5px] uppercase tracking-[0.16em] transition-colors duration-300';
 
 const btnVariants = {
   ink: 'bg-ink text-paper hover:bg-acc',
