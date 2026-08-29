@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { Container, Logo } from './ui';
+import { Container, LogoLink } from './ui';
 import { SITE } from '../data/site';
 
 const NAV = [
@@ -16,9 +15,7 @@ export default function Footer() {
       <Container className="pt-16">
         <div className="grid grid-cols-12 gap-y-12">
           <div className="col-span-12 md:col-span-4">
-            <Link to="/" aria-label="ARHOS ateliér — domov">
-              <Logo />
-            </Link>
+            <LogoLink />
             <p className="mt-6 max-w-[36ch] text-[14px] leading-relaxed text-paper/55">
               Architektonický ateliér pre rodinné domy, interiéry a rekonštrukcie.
             </p>

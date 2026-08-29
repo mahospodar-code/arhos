@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 /* ---------- dekor: zrno papiera + zvislé vodiace linky výkresu ---------- */
 
@@ -152,6 +152,40 @@ export function Logo({ className = '' }: { className?: string }) {
         </span>
       </span>
     </span>
+  );
+}
+
+/* ---------- logo ako odkaz na domov ---------- */
+
+/**
+ * Logo odkazuje na domovskú stránku. Keď na nej už sme, samotný <Link to="/">
+ * neurobí nič — preto v tom prípade odrolujeme hore sami (a zhodíme #kotvu).
+ */
+export function LogoLink({
+  onClick,
+  className = '',
+}: {
+  onClick?: () => void;
+  className?: string;
+}) {
+  const { pathname, hash } = useLocation();
+  const navigate = useNavigate();
+
+  return (
+    <Link
+      to="/"
+      aria-label="ARHOS ateliér — domov"
+      className={className}
+      onClick={(e) => {
+        onClick?.();
+        if (pathname !== '/') return;
+        e.preventDefault();
+        if (hash) navigate('/', { replace: true });
+        else window.scrollTo(0, 0);
+      }}
+    >
+      <Logo />
+    </Link>
   );
 }
 
