@@ -21,7 +21,7 @@ export default function Hero() {
             <Reveal delay={90}>
               <h1 className="mt-8 font-disp text-[clamp(2.85rem,7vw,6.6rem)] leading-[0.98] tracking-[-0.025em]">
                 Premyslené do detailu.
-                <br />Vytvorené pre{' '}
+                <br />Navrhnuté pre{' '}
                 <span className="serif-accent tracking-normal text-acc">ľahký život.</span>
               </h1>
             </Reveal>
