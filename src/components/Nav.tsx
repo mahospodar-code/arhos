@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Logo, CTALink, Container } from './ui';
+import { useLocation } from 'react-router-dom';
+import { LogoLink, CTALink, Container } from './ui';
 import { SITE } from '../data/site';
 
 const LINKS = [
@@ -46,14 +46,7 @@ export default function Nav() {
       }`}
     >
       <Container className="flex h-[76px] items-center justify-between">
-        <Link
-          to="/"
-          aria-label="ARHOS ateliér — domov"
-          onClick={() => setOpen(false)}
-          className="relative z-[60]"
-        >
-          <Logo />
-        </Link>
+        <LogoLink onClick={() => setOpen(false)} className="relative z-[60]" />
 
         <nav className="hidden items-center gap-9 lg:flex" aria-label="Hlavná navigácia">
           {LINKS.slice(0, 4).map((l) => (
