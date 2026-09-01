@@ -20,9 +20,9 @@ export default function Hero() {
             </Reveal>
             <Reveal delay={90}>
               <h1 className="mt-8 font-disp text-[clamp(2.85rem,7vw,6.6rem)] leading-[0.98] tracking-[-0.025em]">
-                Navrhujeme domy,
-                <br />v ktorých sa žije{' '}
-                <span className="serif-accent tracking-normal text-acc">ľahko.</span>
+                Premyslené do detailu.
+                <br />Navrhnuté pre{' '}
+                <span className="serif-accent tracking-normal text-acc">ľahký život.</span>
               </h1>
             </Reveal>
             <Reveal delay={180}>

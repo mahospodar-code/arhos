@@ -1,6 +1,5 @@
-import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Arrow, Container, CTALink, Reveal, SectionHead } from './ui';
+import { Container, Reveal, SectionHead } from './ui';
 import { areaLabel, cld, cover, projects, type Project } from '../data/site';
 
 function ProjectCard({
@@ -14,26 +13,10 @@ function ProjectCard({
   w: number;
   idx: string;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const pillRef = useRef<HTMLDivElement>(null);
-
-  const onMove = (e: React.MouseEvent) => {
-    const wrap = wrapRef.current;
-    const pill = pillRef.current;
-    if (!wrap || !pill) return;
-    const r = wrap.getBoundingClientRect();
-    pill.style.left = `${e.clientX - r.left}px`;
-    pill.style.top = `${e.clientY - r.top}px`;
-  };
-
   return (
     <Link to={`/projekt/${p.id}`} className="group block">
       <Reveal>
-        <div
-          ref={wrapRef}
-          onMouseMove={onMove}
-          className={`relative overflow-hidden bg-paper2 ${ratio}`}
-        >
+        <div className={`relative overflow-hidden bg-paper2 ${ratio}`}>
           <img
             src={cld(cover(p), w)}
             alt={`${p.title} — ${p.location}`}
@@ -43,13 +26,6 @@ function ProjectCard({
           <span className="label absolute top-4 left-4 !text-paper mix-blend-difference">
             {idx}
           </span>
-          <div
-            ref={pillRef}
-            aria-hidden
-            className="pointer-events-none absolute hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 bg-acc px-4 py-2.5 font-disp text-[11px] uppercase tracking-[0.2em] text-paper opacity-0 transition-opacity duration-300 group-hover:opacity-100 md:flex"
-          >
-            Pozrieť projekt <Arrow />
-          </div>
         </div>
         <div className="mt-5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-line pt-4">
           <h3 className="font-disp text-xl tracking-tight transition-colors group-hover:text-acc md:text-2xl">
@@ -79,21 +55,6 @@ export default function Projects() {
             <ProjectCard p={projects[1]} ratio="aspect-[4/5]" w={900} idx="002" />
           </div>
         </div>
-
-        {/* dlaždica pre budúci projekt klienta */}
-        <Reveal className="mt-16">
-          <div className="flex flex-col items-start justify-between gap-8 border border-line p-9 md:flex-row md:items-center md:p-12">
-            <div>
-              <span className="label">Váš projekt — 003</span>
-              <p className="serif-accent mt-4 text-3xl text-ink md:text-4xl">
-                Tu môže stáť váš dom.
-              </p>
-            </div>
-            <CTALink to="#kontakt" variant="ghost">
-              Začnime štúdiou
-            </CTALink>
-          </div>
-        </Reveal>
       </Container>
     </section>
   );
